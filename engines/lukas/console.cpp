@@ -54,7 +54,7 @@ bool Console::Cmd_resfiles(int argc, const char **argv) {
 	}
 	Common::FSList resourceFiles;
 	if (!resourceDir.getChildren(resourceFiles, Common::FSNode::ListMode::kListFilesOnly)) {
-		error("Unable to iterate rsource directory\n");
+		error("Unable to iterate resource directory\n");
 		return false;
 	}
 	debugPrintf("\n");
