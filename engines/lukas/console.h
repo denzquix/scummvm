@@ -23,6 +23,7 @@
 #ifndef LUKAS_CONSOLE_H
 #define LUKAS_CONSOLE_H
 
+#include "lukas/lukas.h"
 #include "gui/debugger.h"
 
 namespace Lukas {
@@ -31,9 +32,9 @@ class Console : public GUI::Debugger {
 private:
 	bool Cmd_help(int argc, const char **argv);
 	bool Cmd_resfiles(int argc, const char **argv);
-	Engine *_engine;
+	LukasEngine *_engine;
 public:
-	Console(Engine *engine);
+	Console(LukasEngine *engine);
 	~Console() override;
 };
 

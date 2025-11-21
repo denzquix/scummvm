@@ -20,6 +20,7 @@
  */
 
 #include "lukas/console.h"
+#include "lukas/lukas.h"
 
 #include "common/config-manager.h"
 #include "common/file.h"
@@ -27,7 +28,7 @@
 
 namespace Lukas {
 
-Console::Console(Engine *engine) : GUI::Debugger() {
+Console::Console(LukasEngine *engine) : GUI::Debugger() {
 	_engine = engine;
 	registerCmd("help",     WRAP_METHOD(Console, Cmd_help));
 	registerCmd("resfiles", WRAP_METHOD(Console, Cmd_resfiles));
