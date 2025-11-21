@@ -36,6 +36,7 @@
 
 #include "lukas/detection.h"
 #include "lukas/events.h"
+#include "lukas/resource.h"
 
 namespace Lukas {
 
@@ -45,6 +46,7 @@ class LukasEngine : public Engine, public Events {
 private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
+	ResourceManager _resourceManager;
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -101,6 +103,10 @@ public:
 	Common::Error loadGameStream(Common::SeekableReadStream *stream) override {
 		Common::Serializer s(stream, nullptr);
 		return syncGame(s);
+	}
+
+	ResourceManager getResourceManager() {
+		return _resourceManager;
 	}
 };
 

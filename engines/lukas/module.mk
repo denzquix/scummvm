@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	lukas.o \
 	console.o \
 	events.o \
+	resource.o \
 	messages.o \
 	metaengine.o \
 	view.o \
