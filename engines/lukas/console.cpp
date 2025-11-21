@@ -27,7 +27,8 @@
 
 namespace Lukas {
 
-Console::Console() : GUI::Debugger() {
+Console::Console(Engine *engine) : GUI::Debugger() {
+	_engine = engine;
 	registerCmd("help",     WRAP_METHOD(Console, Cmd_help));
 	registerCmd("resfiles", WRAP_METHOD(Console, Cmd_resfiles));
 }

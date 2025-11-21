@@ -31,8 +31,9 @@ class Console : public GUI::Debugger {
 private:
 	bool Cmd_help(int argc, const char **argv);
 	bool Cmd_resfiles(int argc, const char **argv);
+	Engine *_engine;
 public:
-	Console();
+	Console(Engine *engine);
 	~Console() override;
 };
 

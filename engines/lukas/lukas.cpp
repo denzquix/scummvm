@@ -55,7 +55,7 @@ Common::Error LukasEngine::run() {
 	initGraphics(320, 200);
 
 	// Set the engine's debugger console
-	setDebugger(new Console());
+	setDebugger(new Console(this));
 
 	runGame();
 
