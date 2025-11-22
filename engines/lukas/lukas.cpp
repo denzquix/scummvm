@@ -35,7 +35,8 @@ namespace Lukas {
 LukasEngine *g_engine;
 
 LukasEngine::LukasEngine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(syst),
-	_gameDescription(gameDesc), _randomSource("Lukas") {
+	_gameDescription(gameDesc), _randomSource("Lukas"),
+	_resourceManager(ConfMan.getPath("path")) {
 	g_engine = this;
 }
 
