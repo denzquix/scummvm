@@ -88,15 +88,19 @@ bool Console::Cmd_subres(int argc, const char **argv) {
 		debugPrintf("Resource not found\n");
 		return true;
 	}
+	debugPrintf("\n");
+	debugPrintf("Subresources\n");
+	debugPrintf("------------\n");
 	auto subres = resman.getSubresourceSpans(stream.get());
 	if (subres.empty()) {
-		debugPrintf("  (no subresources found)\n");
+		debugPrintf("  (none found!)\n");
 	}
 	else {
 		for (uint i = 0; i < subres.size(); i++) {
 			debugPrintf("  [%d] $%x (%d bytes)\n", i, subres[i].first, subres[i].second);
 		}
 	}
+	debugPrintf("\n");
 	return true;
 }
 
