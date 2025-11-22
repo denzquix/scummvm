@@ -293,4 +293,49 @@ Common::SeekableReadStream* ResourceManager::toResourceStream(Common::SeekableRe
   return new Common::MemoryReadStream(buffer, fullSize, DisposeAfterUse::YES);
 }
 
+Common::Array<Common::Pair<uint32, uint32>> ResourceManager::getSubresourceSpans(Common::SeekableReadStream *resourceStream) const {
+  if (!resourceStream) {
+    return Common::Array<Common::Pair<uint32, uint32>>();
+  }
+  int64 streamLength = resourceStream->size();
+  if (streamLength < 12) {
+    return Common::Array<Common::Pair<uint32, uint32>>();
+  }
+  Common::Array<Common::Pair<uint32, uint32>> spans;
+  for (;;) {
+    uint32 ptr = resourceStream->readUint32LE();
+    if (resourceStream->err() || resourceStream->eos()) {
+      return Common::Array<Common::Pair<uint32, uint32>>();
+    }
+    if (ptr == 0) {
+      break;
+    }
+    spans.push_back(Common::Pair<uint32, uint32>(ptr, 0));
+  }
+  if (spans.empty()) {
+    return spans;
+  }
+  uint32 minPtr = spans[0].first;
+  for (uint32 i = 0; i < spans.size(); i++) {
+    if (spans[i].first < minPtr) {
+      minPtr = spans[i].first;
+    }
+  }
+  uint32 tableEndOffset = (spans.size() * 2 + 1) * 4;
+  if (streamLength < tableEndOffset || minPtr < tableEndOffset) {
+    return Common::Array<Common::Pair<uint32, uint32>>();
+  }
+  for (uint i = 0; i < spans.size(); i++) {
+    uint32 resourceLength = resourceStream->readUint32LE();
+    if (((int64)spans[i].first + resourceLength) > streamLength) {
+      return Common::Array<Common::Pair<uint32, uint32>>();
+    }
+    spans[i].second = resourceLength;
+  }
+  if (resourceStream->err()) {
+    return Common::Array<Common::Pair<uint32, uint32>>();
+  }
+  return spans;
+}
+
 } // End of namespace Lukas

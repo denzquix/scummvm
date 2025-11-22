@@ -32,6 +32,7 @@ Console::Console(LukasEngine *engine) : GUI::Debugger() {
 	_engine = engine;
 	registerCmd("help",     WRAP_METHOD(Console, Cmd_help));
 	registerCmd("resfiles", WRAP_METHOD(Console, Cmd_resfiles));
+	registerCmd("subres",   WRAP_METHOD(Console, Cmd_subres));
 }
 
 Console::~Console() {
@@ -42,6 +43,7 @@ bool Console::Cmd_help(int argc, const char **argv) {
 	debugPrintf("Commands\n");
 	debugPrintf("--------\n");
 	debugPrintf("  resfiles - List resource files\n");
+	debugPrintf("  subres <res> - List subresources of resource\n");
 	debugPrintf("\n");
 	return true;
 }
@@ -72,6 +74,29 @@ bool Console::Cmd_resfiles(int argc, const char **argv) {
 		}
 	}
 	debugPrintf("\n");
+	return true;
+}
+
+bool Console::Cmd_subres(int argc, const char **argv) {
+	if (argc != 2) {
+		debugPrintf("Usage: subres <res>\n");
+		return true;
+	}
+	auto resman = _engine->getResourceManager();
+	Common::ScopedPtr<Common::SeekableReadStream> stream(resman.loadResourceFile(Common::String(argv[1])));
+	if (!stream) {
+		debugPrintf("Resource not found\n");
+		return true;
+	}
+	auto subres = resman.getSubresourceSpans(stream.get());
+	if (subres.empty()) {
+		debugPrintf("  (no subresources found)\n");
+	}
+	else {
+		for (uint i = 0; i < subres.size(); i++) {
+			debugPrintf("  [%d] $%x (%d bytes)\n", i, subres[i].first, subres[i].second);
+		}
+	}
 	return true;
 }
 

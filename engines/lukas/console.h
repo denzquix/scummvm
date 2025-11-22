@@ -32,6 +32,7 @@ class Console : public GUI::Debugger {
 private:
 	bool Cmd_help(int argc, const char **argv);
 	bool Cmd_resfiles(int argc, const char **argv);
+	bool Cmd_subres(int argc, const char **argv);
 	LukasEngine *_engine;
 public:
 	Console(LukasEngine *engine);

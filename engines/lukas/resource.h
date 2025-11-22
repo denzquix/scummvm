@@ -63,6 +63,8 @@ public:
 
 	Common::HashMap<Common::Path, Metadata, Common::Path::IgnoreCase_Hash, Common::Path::IgnoreCase_EqualTo> metadata;
 
+	Common::Array<Common::Pair<uint32, uint32>> getSubresourceSpans(Common::SeekableReadStream *resourceStream) const;
+
 private:
 	Common::FSNode _resourceRoot;
 
