@@ -45,7 +45,6 @@ public:
 	/**
 	 * Loads a resource by name and optional subresource indices.
 	 * @param resourceName Name of the DAT file; the .DAT extension is optional.
-	 * @param indices Sequence of indices into nested subresource lists.
 	 * @return Stream for the requested data, or nullptr on failure.
 	 */
 	Common::SeekableReadStream *loadResourceFile(const Common::String &resourceName) const;
