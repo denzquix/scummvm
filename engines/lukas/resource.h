@@ -50,6 +50,8 @@ public:
 	 */
 	Common::SeekableReadStream *loadResourceFile(const Common::String &resourceName) const;
 
+	Common::SeekableReadStream *loadResource(const Common::Path &p) const;
+
 	struct Metadata {
 		enum Type {
 			Unknown = 0,
@@ -64,6 +66,8 @@ public:
 	Common::HashMap<Common::Path, Metadata, Common::Path::IgnoreCase_Hash, Common::Path::IgnoreCase_EqualTo> metadata;
 
 	Common::Array<Common::Pair<uint32, uint32>> getSubresourceSpans(Common::SeekableReadStream *resourceStream) const;
+
+	Common::SeekableReadStream *getSubresource(Common::SeekableReadStream *resourceStream, uint32 startOffset, uint32 endOffset, DisposeAfterUse::Flag flag) const;
 
 private:
 	Common::FSNode _resourceRoot;

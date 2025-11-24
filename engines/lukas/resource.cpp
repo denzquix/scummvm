@@ -28,6 +28,7 @@
 #include "common/ptr.h"
 #include "common/scummsys.h"
 #include "common/stream.h"
+#include "common/substream.h"
 #include "common/textconsole.h"
 
 namespace Lukas {
@@ -61,6 +62,64 @@ Common::SeekableReadStream *ResourceManager::loadResourceFile(const Common::Stri
   }
 
   return toResourceStream(stream);
+}
+
+Common::SeekableReadStream *ResourceManager::loadResource(const Common::Path &p) const {
+  if (p.empty()) {
+    return nullptr;
+  }
+  const Common::Path parent = p.getParent().removeTrailingSeparators();
+  warning("[Parent of %s is %s]", p.toString().c_str(), parent.toString().c_str());
+  if (parent.empty()) {
+    warning("Root - loading resource file");
+    return loadResourceFile(p.toString());
+  }
+  Common::SeekableReadStream *parentStream = loadResource(parent);
+  if (!parentStream) {
+    warning("Parent stream is null %s", parent.toString().c_str());
+    return nullptr;
+  }
+  auto subres = getSubresourceSpans(parentStream);
+  if (subres.empty()) {
+    warning("No subres for %s", parent.toString().c_str());
+    delete parentStream;
+    return nullptr;
+  }
+  const Common::String indexStr = p.getLastComponent().removeTrailingSeparators().toString();
+  // reject leading zeros to only allow one canonical form
+  if (indexStr.size() > 1 && indexStr[0] == '0') {
+    warning("Leading zero(s): %s", p.toString().c_str());
+    delete parentStream;
+    return nullptr;
+  }
+  uint64 index64 = indexStr.asUint64();
+  if (index64 > UINT32_MAX) {
+    warning("Out of uint32 range: %s", p.toString().c_str());
+    delete parentStream;
+    return nullptr;
+  }
+  uint32 index = (uint32)index64;
+  if (index == 0) {
+    if (indexStr.empty()) {
+      warning("Empty name: %s", p.toString().c_str());
+      delete parentStream;
+      return nullptr;
+    }
+    for (uint i = 0; i < indexStr.size(); i++) {
+      if (!Common::isDigit(indexStr[i])) {
+        warning("Invalid index: %s", p.toString().c_str());
+        delete parentStream;
+        return nullptr;
+      }
+    }
+  }
+  if (index >= subres.size()) {
+    warning("Subresource out of range: %s", p.toString().c_str());
+    delete parentStream;
+    return nullptr;
+  }
+  warning("Getting subresource %d-%d of %s", subres[index].first, subres[index].second, parent.toString().c_str());
+  return getSubresource(parentStream, subres[index].first, subres[index].second, DisposeAfterUse::YES);
 }
 
 Common::String ResourceManager::normalizeName(const Common::String &resourceName) const {
@@ -298,7 +357,7 @@ Common::Array<Common::Pair<uint32, uint32>> ResourceManager::getSubresourceSpans
     return Common::Array<Common::Pair<uint32, uint32>>();
   }
   int64 streamLength = resourceStream->size();
-  if (streamLength < 12) {
+  if (streamLength < 12 || streamLength > MAX_RESOURCE_SIZE) {
     return Common::Array<Common::Pair<uint32, uint32>>();
   }
   Common::Array<Common::Pair<uint32, uint32>> spans;
@@ -325,17 +384,46 @@ Common::Array<Common::Pair<uint32, uint32>> ResourceManager::getSubresourceSpans
   if (streamLength < tableEndOffset || minPtr < tableEndOffset) {
     return Common::Array<Common::Pair<uint32, uint32>>();
   }
+  // if the content of a resource is "NULLPTR" or "NULLPTR\r\n",
+  // replace its bounds with 0-0
   for (uint i = 0; i < spans.size(); i++) {
     uint32 resourceLength = resourceStream->readUint32LE();
-    if (((int64)spans[i].first + resourceLength) > streamLength) {
+    if (resourceLength == 7 || resourceLength == 9) {
+      int64 restorePos = resourceStream->pos();
+      resourceStream->seek(spans[i].first);
+      byte buf[9];
+      if (resourceStream->read(buf, resourceLength) != resourceLength) {
+        return Common::Array<Common::Pair<uint32, uint32>>();
+      }
+      if (memcmp(buf, "NULLPTR\r\n", resourceLength) == 0) {
+        spans[i].first = spans[i].second = 0;
+        resourceStream->seek(restorePos);
+        continue;
+      }
+      resourceStream->seek(restorePos);
+    }
+    int64 endOffset = (int64)spans[i].first + resourceLength;
+    if (endOffset > streamLength) {
       return Common::Array<Common::Pair<uint32, uint32>>();
     }
-    spans[i].second = resourceLength;
+    spans[i].second = (uint32)endOffset;
   }
   if (resourceStream->err()) {
     return Common::Array<Common::Pair<uint32, uint32>>();
   }
   return spans;
+}
+
+Common::SeekableReadStream *ResourceManager::getSubresource(
+  Common::SeekableReadStream *resourceStream,
+  uint32 startOffset,
+  uint32 endOffset,
+  DisposeAfterUse::Flag flag
+) const {
+  if (!resourceStream) {
+    return nullptr;
+  }
+  return toResourceStream(new Common::SeekableSubReadStream(resourceStream, startOffset, endOffset, flag));
 }
 
 } // End of namespace Lukas

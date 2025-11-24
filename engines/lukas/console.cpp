@@ -83,7 +83,7 @@ bool Console::Cmd_subres(int argc, const char **argv) {
 		return true;
 	}
 	auto resman = _engine->getResourceManager();
-	Common::ScopedPtr<Common::SeekableReadStream> stream(resman.loadResourceFile(Common::String(argv[1])));
+	Common::ScopedPtr<Common::SeekableReadStream> stream(resman.loadResource(Common::Path(argv[1])));
 	if (!stream) {
 		debugPrintf("Resource not found\n");
 		return true;
@@ -97,7 +97,10 @@ bool Console::Cmd_subres(int argc, const char **argv) {
 	}
 	else {
 		for (uint i = 0; i < subres.size(); i++) {
-			debugPrintf("  [%d] $%x (%d bytes)\n", i, subres[i].first, subres[i].second);
+			if (subres[i].first == subres[i].second) {
+				continue;
+			}
+			debugPrintf("  %s/%d\n", argv[1], i);
 		}
 	}
 	debugPrintf("\n");
