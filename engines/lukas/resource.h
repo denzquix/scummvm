@@ -22,6 +22,8 @@
 #ifndef LUKAS_RESOURCE_H
 #define LUKAS_RESOURCE_H
 
+#include "lukas/room.h"
+
 #include "common/array.h"
 #include "common/fs.h"
 #include "common/hashmap.h"
@@ -67,6 +69,8 @@ public:
 	Common::Array<Common::Pair<uint32, uint32>> getSubresourceSpans(Common::SeekableReadStream *resourceStream) const;
 
 	Common::SeekableReadStream *getSubresource(Common::SeekableReadStream *resourceStream, uint32 startOffset, uint32 endOffset, DisposeAfterUse::Flag flag) const;
+
+	Common::Array<RoomObjectInfo> getRoomObjectInfo(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
 
 private:
 	Common::FSNode _resourceRoot;

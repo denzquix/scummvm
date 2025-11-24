@@ -20,6 +20,7 @@
  */
 
 #include "lukas/resource.h"
+#include "lukas/room.h"
 
 #include "common/debug.h"
 #include "common/file.h"
@@ -424,6 +425,84 @@ Common::SeekableReadStream *ResourceManager::getSubresource(
     return nullptr;
   }
   return toResourceStream(new Common::SeekableSubReadStream(resourceStream, startOffset, endOffset, flag));
+}
+
+static Common::U32String readRoomInfoString(Common::SeekableReadStream *resourceStream, uint32 pos, Common::CodePage page) {
+  if (pos == 0)
+    return Common::U32String();
+  if (pos >= resourceStream->size()) {
+    warning("room string out of range");
+    return Common::U32String();
+  }
+  resourceStream->seek(pos);
+  Common::String raw = resourceStream->readString();
+  if (raw.empty()) return Common::U32String();
+  auto unicode = raw.decode(page);
+  return unicode;
+}
+
+static const uint32 ROOM_INFO_HEADER_SIZE = 8;
+static const uint32 ROOM_OBJECT_SIZE = 46;
+
+Common::Array<RoomObjectInfo> ResourceManager::getRoomObjectInfo(Common::SeekableReadStream *resourceStream, Common::CodePage page) const {
+
+  // These values appear to always be the same
+  if (resourceStream->readUint32LE() != 8) {
+    warning("Not a room object array: missing magic number (header)");
+    return Common::Array<RoomObjectInfo>();
+  }
+  if (resourceStream->readUint16LE() != 0) {
+    warning("Not a room object array: missing magic number (header)");
+    return Common::Array<RoomObjectInfo>();
+  }
+
+  uint16 count = resourceStream->readUint16LE();
+  if (resourceStream->eos() || resourceStream->err() || (ROOM_INFO_HEADER_SIZE + (ROOM_OBJECT_SIZE * count)) > resourceStream->size()) {
+    warning("Invalid stream");
+    return Common::Array<RoomObjectInfo>();
+  }
+  Common::Array<RoomObjectInfo> objects;
+  objects.reserve(count);
+  for (uint16 i = 0; i < count; i++) {
+    RoomObjectInfo obj;
+    resourceStream->seek(ROOM_INFO_HEADER_SIZE + i * ROOM_OBJECT_SIZE);
+
+    // These values appear to always be the same
+    if (resourceStream->readUint32LE() != 0) {
+      warning("Not a room object array: missing magic number (record)");
+      return Common::Array<RoomObjectInfo>();
+    }
+    if (resourceStream->readUint32LE() != 1) {
+      warning("Not a room object array: missing magic number (record)");
+      return Common::Array<RoomObjectInfo>();
+    }
+
+    obj.x = resourceStream->readUint16LE();
+    obj.y = resourceStream->readUint16LE();
+    obj.width = resourceStream->readUint16LE();
+    obj.height = resourceStream->readUint16LE();
+    obj.id = resourceStream->readUint16LE();
+    uint32 panelNameOffset = resourceStream->readUint32LE();
+    uint32 hoverNameOffset = resourceStream->readUint32LE();
+    uint32 openTextOffset = resourceStream->readUint32LE();
+    uint32 useTextOffset = resourceStream->readUint32LE();
+    uint32 lookTextOffset = resourceStream->readUint32LE();
+    uint32 closeTextOffset = resourceStream->readUint32LE();
+    uint32 takeTextOffset = resourceStream->readUint32LE();
+    obj.panelName = readRoomInfoString(resourceStream, panelNameOffset, page);
+    obj.hoverName = readRoomInfoString(resourceStream, hoverNameOffset, page);
+    obj.openText = readRoomInfoString(resourceStream, openTextOffset, page);
+    obj.useText = readRoomInfoString(resourceStream, useTextOffset, page);
+    obj.lookText = readRoomInfoString(resourceStream, lookTextOffset, page);
+    obj.closeText = readRoomInfoString(resourceStream, closeTextOffset, page);
+    obj.takeText = readRoomInfoString(resourceStream, takeTextOffset, page);
+    objects.push_back(obj);
+  }
+  if (resourceStream->err()) {
+    warning("Not a room object array: final error");
+    objects.clear();
+  }
+  return objects;
 }
 
 } // End of namespace Lukas

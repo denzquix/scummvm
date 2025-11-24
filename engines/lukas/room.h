@@ -1,4 +1,3 @@
-
 /* ScummVM - Graphic Adventure Engine
  *
  * ScummVM is the legal property of its developers, whose names
@@ -20,26 +19,28 @@
  *
  */
 
-#ifndef LUKAS_CONSOLE_H
-#define LUKAS_CONSOLE_H
+#ifndef LUKAS_ROOM_H
+#define LUKAS_ROOM_H
 
-#include "lukas/lukas.h"
-#include "gui/debugger.h"
+#include "lukas/view1.h"
 
 namespace Lukas {
 
-class Console : public GUI::Debugger {
-private:
-	bool Cmd_help(int argc, const char **argv);
-	bool Cmd_resfiles(int argc, const char **argv);
-	bool Cmd_subres(int argc, const char **argv);
-	bool Cmd_roomobjs(int argc, const char **argv);
-	LukasEngine *_engine;
-public:
-	Console(LukasEngine *engine);
-	~Console() override;
+struct RoomObjectInfo {
+  uint16 x;
+  uint16 y;
+  uint16 width;
+  uint16 height;
+  uint16 id;
+  Common::U32String panelName;
+  Common::U32String hoverName;
+  Common::U32String openText;
+  Common::U32String useText;
+  Common::U32String lookText;
+  Common::U32String closeText;
+  Common::U32String takeText;
 };
 
-} // End of namespace Lukas
+} // namespace Lukas
 
-#endif // LUKAS_CONSOLE_H
+#endif
