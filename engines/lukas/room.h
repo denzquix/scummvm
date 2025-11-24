@@ -22,8 +22,6 @@
 #ifndef LUKAS_ROOM_H
 #define LUKAS_ROOM_H
 
-#include "lukas/view1.h"
-
 namespace Lukas {
 
 struct RoomObjectInfo {
