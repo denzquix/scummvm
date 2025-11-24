@@ -5,6 +5,7 @@ MODULE_OBJS = \
 	console.o \
 	events.o \
 	resource.o \
+	room.o \
 	messages.o \
 	metaengine.o \
 	view.o \
