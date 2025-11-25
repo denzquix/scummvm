@@ -22,6 +22,7 @@
 #ifndef LUKAS_RESOURCE_H
 #define LUKAS_RESOURCE_H
 
+#include "lukas/dialogue.h"
 #include "lukas/room.h"
 
 #include "common/array.h"
@@ -71,6 +72,8 @@ public:
 	Common::SeekableReadStream *getSubresource(Common::SeekableReadStream *resourceStream, uint32 startOffset, uint32 endOffset, DisposeAfterUse::Flag flag) const;
 
 	Common::Array<RoomObjectInfo> getRoomObjectInfo(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
+
+	Common::Array<DialogueLine> getDialogue(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
 
 private:
 	Common::FSNode _resourceRoot;

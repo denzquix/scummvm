@@ -34,6 +34,7 @@ Console::Console(LukasEngine *engine) : GUI::Debugger() {
 	registerCmd("resfiles", WRAP_METHOD(Console, Cmd_resfiles));
 	registerCmd("subres",   WRAP_METHOD(Console, Cmd_subres));
 	registerCmd("roomobjs", WRAP_METHOD(Console, Cmd_roomobjs));
+	registerCmd("dlgres",   WRAP_METHOD(Console, Cmd_dlgres));
 }
 
 Console::~Console() {
@@ -133,8 +134,8 @@ bool Console::Cmd_roomobjs(int argc, const char **argv) {
 			debugPrintf("[%d] X:%d Y:%d W:%d H:%d \"%s\" \"%s\"\n",
 				roomobjs[i].id,
 				roomobjs[i].x, roomobjs[i].y, roomobjs[i].width, roomobjs[i].height,
-				Common::toPrintable(roomobjs[i].panelName.encode(page)).c_str(),
-				Common::toPrintable(roomobjs[i].hoverName.encode(page)).c_str());
+				Common::toPrintable(roomobjs[i].panelName.encode(page), false).c_str(),
+				Common::toPrintable(roomobjs[i].hoverName.encode(page), false).c_str());
 			if (!roomobjs[i].lookText.empty()) {
 				Common::String str = Common::toPrintable(roomobjs[i].lookText.encode(page), false);
 				debugPrintf("- look: \"%s\"\n", str.c_str());
@@ -155,6 +156,59 @@ bool Console::Cmd_roomobjs(int argc, const char **argv) {
 				Common::String str = Common::toPrintable(roomobjs[i].closeText.encode(page), false);
 				debugPrintf("- close: \"%s\"\n", str.c_str());
 			}
+		}
+	}
+	debugPrintf("\n");
+	return true;
+}
+
+void Console::debugPrintControlString(const Common::U32String &ustr, Common::CodePage page) {
+	debugPrintf("\"");
+	for (uint i = 0; i < ustr.size(); i++) {
+		if (ustr[i] >= kControlCodeFirst && ustr[i] <= kControlCodeLast) {
+			debugPrintf("\\x%02x", ustr[i] - kControlCodeFirst);
+		}
+		else {
+			debugPrintf(Common::toPrintable(Common::U32String(ustr[i]).encode(page), false).c_str());
+		}
+	}
+	debugPrintf("\"");
+}
+
+bool Console::Cmd_dlgres(int argc, const char **argv) {
+	const Common::CodePage page = Common::CodePage::kDos850;
+	if (argc != 2) {
+		debugPrintf("Usage: dlgres <res>\n");
+		return true;
+	}
+	auto resman = _engine->getResourceManager();
+	Common::ScopedPtr<Common::SeekableReadStream> stream(resman.loadResource(Common::Path(argv[1])));
+	if (!stream) {
+		debugPrintf("Resource not found\n");
+		return true;
+	}
+	debugPrintf("\n");
+	debugPrintf("Dialogue Lines\n");
+	debugPrintf("--------------\n");
+	auto dialogue = resman.getDialogue(stream.get(), page);
+	if (dialogue.empty()) {
+		debugPrintf("  (none found!)\n");
+	}
+	else {
+		for (uint i = 0; i < dialogue.size(); i++) {
+			debugPrintf("[%d] %d %d ", i, dialogue[i].speaker, dialogue[i].flags);
+			debugPrintControlString(dialogue[i].text, page);
+			debugPrintf(" [ => ");
+			if (dialogue[i].nextLines.empty()) {
+				debugPrintf("STOP");
+			}
+			else {
+				debugPrintf("%d", dialogue[i].nextLines[0]);
+				for (uint j = 1; j < dialogue[i].nextLines.size(); j++) {
+					debugPrintf(" %d", dialogue[i].nextLines[j]);
+				}
+			}
+			debugPrintf("]\n");
 		}
 	}
 	debugPrintf("\n");

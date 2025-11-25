@@ -3,6 +3,7 @@ MODULE := engines/lukas
 MODULE_OBJS = \
 	lukas.o \
 	console.o \
+	dialogue.o \
 	events.o \
 	resource.o \
 	room.o \

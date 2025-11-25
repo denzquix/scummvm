@@ -19,6 +19,7 @@
  *
  */
 
+#include "lukas/dialogue.h"
 #include "lukas/resource.h"
 #include "lukas/room.h"
 
@@ -503,6 +504,67 @@ Common::Array<RoomObjectInfo> ResourceManager::getRoomObjectInfo(Common::Seekabl
     objects.clear();
   }
   return objects;
+}
+
+static const uint32 DIALOGUE_HEADER_SIZE = 4;
+static const uint32 DIALOGUE_ENTRY_SIZE = 8;
+
+Common::Array<DialogueLine> ResourceManager::getDialogue(Common::SeekableReadStream *resourceStream, Common::CodePage page) const {
+  // check for "II" signature
+  if (resourceStream->readUint16BE() != MKTAG16('I', 'I')) {
+    return Common::Array<DialogueLine>();
+  }
+
+  uint16 lineCount = resourceStream->readUint16LE();
+  if (resourceStream->eos() || resourceStream->err() || (DIALOGUE_HEADER_SIZE + (DIALOGUE_ENTRY_SIZE * lineCount)) > resourceStream->size()) {
+    return Common::Array<DialogueLine>();
+  }
+  Common::Array<DialogueLine> lines;
+  lines.reserve(lineCount);
+  for (uint16 line_i = 0; line_i < lineCount; line_i++) {
+    DialogueLine line;
+    resourceStream->seek(DIALOGUE_HEADER_SIZE + line_i * DIALOGUE_ENTRY_SIZE);
+    line.speaker = resourceStream->readUint16LE();
+    line.flags = resourceStream->readUint16LE();
+    uint16 strOffset = resourceStream->readUint16LE();
+    uint16 nextOffset = resourceStream->readUint16LE();
+    if (strOffset >= resourceStream->size() || nextOffset >= resourceStream->size()) {
+      return Common::Array<DialogueLine>();
+    }
+    if (strOffset != 0) {
+      resourceStream->seek(strOffset);
+      while (char c = resourceStream->readByte()) {
+        // unprintable characters are the first in a two-byte escape code
+        // that we map into a range of Private Use Area - note that the
+        // second byte may happen to be in printable range if left as-is
+        if (c < 0x20 && c != '\r' && c != '\n') {
+          line.text += kControlCodeFirst + c;
+          line.text += kControlCodeFirst + resourceStream->readByte();
+        }
+        else {
+          line.text += Common::String(c).decode(page);
+        }
+        if (resourceStream->eos() || resourceStream->err()) {
+          return Common::Array<DialogueLine>();
+        }
+      }
+    }
+    if (nextOffset != 0) {
+      resourceStream->seek(nextOffset);
+      uint16 nextCount = resourceStream->readUint16LE();
+      if (resourceStream->err() || ((resourceStream->pos() + nextCount * 2) > resourceStream->size())) {
+        return Common::Array<DialogueLine>();
+      }
+      for (uint16 next_i = 0; next_i < nextCount; next_i++) {
+        line.nextLines.push_back(resourceStream->readUint16LE());
+      }
+    }
+    lines.push_back(line);
+  }
+  if (resourceStream->err()) {
+    lines.clear();
+  }
+  return lines;
 }
 
 } // End of namespace Lukas
