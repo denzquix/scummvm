@@ -33,6 +33,9 @@
 #include "common/substream.h"
 #include "common/textconsole.h"
 
+#include "graphics/palette.h"
+#include "graphics/paletteman.h"
+
 namespace Lukas {
 
 ResourceManager::ResourceManager() {
@@ -565,6 +568,22 @@ Common::Array<DialogueLine> ResourceManager::getDialogue(Common::SeekableReadStr
     lines.clear();
   }
   return lines;
+}
+
+bool ResourceManager::loadPaletteResource(Common::SeekableReadStream *resourceStream) const {
+  if (!resourceStream) {
+    return false;
+  }
+  byte palette[Graphics::PALETTE_SIZE];
+  uint32 read = resourceStream->read(palette, Graphics::PALETTE_SIZE);
+  if (read == 0 || resourceStream->err()) {
+    return false;
+  }
+  for (uint32 i = 0; i < read; i++) {
+    palette[i] = PALETTE_6BIT_TO_8BIT(palette[i]);
+  }
+  g_system->getPaletteManager()->setPalette(palette, 0, read/3);
+  return true;
 }
 
 } // End of namespace Lukas

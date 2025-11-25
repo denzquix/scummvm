@@ -75,6 +75,8 @@ public:
 
 	Common::Array<DialogueLine> getDialogue(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
 
+	bool loadPaletteResource(Common::SeekableReadStream *resourceStream) const;
+
 private:
 	Common::FSNode _resourceRoot;
 
