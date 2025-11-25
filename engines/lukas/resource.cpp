@@ -35,6 +35,7 @@
 
 #include "graphics/palette.h"
 #include "graphics/paletteman.h"
+#include "graphics/managed_surface.h"
 
 namespace Lukas {
 
@@ -576,10 +577,13 @@ bool ResourceManager::loadPaletteResource(Common::SeekableReadStream *resourceSt
   }
   byte palette[Graphics::PALETTE_SIZE];
   uint32 read = resourceStream->read(palette, Graphics::PALETTE_SIZE);
-  if (read == 0 || resourceStream->err()) {
+  if (read == 0 || resourceStream->err() || read%3 != 0 || !resourceStream->eos()) {
     return false;
   }
   for (uint32 i = 0; i < read; i++) {
+    if (palette[i] > 63){
+      return false;
+    }
     palette[i] = PALETTE_6BIT_TO_8BIT(palette[i]);
   }
   g_system->getPaletteManager()->setPalette(palette, 0, read/3);
