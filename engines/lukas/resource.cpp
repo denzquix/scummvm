@@ -571,7 +571,7 @@ Common::Array<DialogueLine> ResourceManager::getDialogue(Common::SeekableReadStr
   return lines;
 }
 
-bool ResourceManager::loadPaletteResource(Common::SeekableReadStream *resourceStream) const {
+bool ResourceManager::loadPlainPaletteResource(Common::SeekableReadStream *resourceStream) const {
   if (!resourceStream) {
     return false;
   }
@@ -590,6 +590,28 @@ bool ResourceManager::loadPaletteResource(Common::SeekableReadStream *resourceSt
   return true;
 }
 
+bool ResourceManager::loadDeltaPaletteResource(Common::SeekableReadStream *resourceStream) const {
+  if (!resourceStream) {
+    return false;
+  }
+  byte palette[Graphics::PALETTE_SIZE];
+  while (!resourceStream->eos()) {
+    byte offset = resourceStream->readByte();
+    uint32 len = resourceStream->readByte();
+    if (resourceStream->read(palette, len*3) != len*3 || resourceStream->err()) {
+      return false;
+    }
+    for (uint32 i = 0; i < len*3; i++) {
+      if (palette[i] > 63){
+        return false;
+      }
+      palette[i] = PALETTE_6BIT_TO_8BIT(palette[i]);
+    }
+    g_system->getPaletteManager()->setPalette(palette, offset, len);
+  }
+  return true;
+}
+
 static const uint32 MAX_IMAGE_SIZE = 1024 * 1024;
 
 bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const {
@@ -597,10 +619,12 @@ bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourc
   uint16 height = resourceStream->readUint16LE();
   uint32 dataSize = width * height;
   if (dataSize == 0 || dataSize > MAX_IMAGE_SIZE) {
+    warning("image loading failed: invalid dimensions %dx%d", width, height);
     return false;
   }
   surface.create(width, height, Graphics::PixelFormat::createFormatCLUT8());
-  if (resourceStream->read(surface.getPixels(), dataSize) != dataSize || resourceStream->err() || !resourceStream->eos()) {
+  if (resourceStream->read(surface.getPixels(), dataSize) != dataSize) {
+    warning("image loading failed: did not read enough data");
     surface.free();
     return false;
   }

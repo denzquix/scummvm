@@ -77,7 +77,9 @@ public:
 
 	Common::Array<DialogueLine> getDialogue(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
 
-	bool loadPaletteResource(Common::SeekableReadStream *resourceStream) const;
+	bool loadPlainPaletteResource(Common::SeekableReadStream *resourceStream) const;
+
+	bool loadDeltaPaletteResource(Common::SeekableReadStream *resourceStream) const;
 
 	bool loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
