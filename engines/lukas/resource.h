@@ -33,6 +33,8 @@
 #include "common/scummsys.h"
 #include "common/str.h"
 
+#include "graphics/surface.h"
+
 namespace Lukas {
 
 #define MAX_RESOURCE_SIZE (1024*1024*16)
@@ -76,6 +78,8 @@ public:
 	Common::Array<DialogueLine> getDialogue(Common::SeekableReadStream *resourceStream, Common::CodePage page = Common::CodePage::kDos850) const;
 
 	bool loadPaletteResource(Common::SeekableReadStream *resourceStream) const;
+
+	bool loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
 private:
 	Common::FSNode _resourceRoot;

@@ -35,7 +35,7 @@
 
 #include "graphics/palette.h"
 #include "graphics/paletteman.h"
-#include "graphics/managed_surface.h"
+#include "graphics/surface.h"
 
 namespace Lukas {
 
@@ -587,6 +587,23 @@ bool ResourceManager::loadPaletteResource(Common::SeekableReadStream *resourceSt
     palette[i] = PALETTE_6BIT_TO_8BIT(palette[i]);
   }
   g_system->getPaletteManager()->setPalette(palette, 0, read/3);
+  return true;
+}
+
+static const uint32 MAX_IMAGE_SIZE = 1024 * 1024;
+
+bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const {
+  uint16 width = resourceStream->readUint16LE();
+  uint16 height = resourceStream->readUint16LE();
+  uint32 dataSize = width * height;
+  if (dataSize == 0 || dataSize > MAX_IMAGE_SIZE) {
+    return false;
+  }
+  surface.create(width, height, Graphics::PixelFormat::createFormatCLUT8());
+  if (resourceStream->read(surface.getPixels(), dataSize) != dataSize || resourceStream->err() || !resourceStream->eos()) {
+    surface.free();
+    return false;
+  }
   return true;
 }
 
