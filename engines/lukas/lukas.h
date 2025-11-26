@@ -108,6 +108,16 @@ public:
 	ResourceManager getResourceManager() {
 		return _resourceManager;
 	}
+
+	bool loadCursor(Common::Path resPath, uint32 keyColor = 0) {
+		Common::SharedPtr<Common::SeekableReadStream> resStream(_resourceManager.loadResource(resPath));
+		return _resourceManager.loadCursorResource(resStream.get(), keyColor);
+	}
+
+	bool loadDeltaPalette(Common::Path resPath, uint32 keyColor = 0) {
+		Common::SharedPtr<Common::SeekableReadStream> resStream(_resourceManager.loadResource(resPath));
+		return _resourceManager.loadDeltaPaletteResource(resStream.get());
+	}
 };
 
 extern LukasEngine *g_engine;
