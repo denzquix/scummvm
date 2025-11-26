@@ -20,10 +20,12 @@
  */
 
 #include "common/config-manager.h"
+#include "common/path.h"
 #include "graphics/screen.h"
 #include "lukas/events.h"
 #include "lukas/lukas.h"
 #include "lukas/views.h"
+#include "lukas/special_screen_view.h"
 
 namespace Lukas {
 
@@ -47,7 +49,24 @@ void Events::runGame() {
 	if (saveSlot != -1)
 		g_engine->loadGameState(saveSlot);
 
-	addView("View1");
+	if (g_engine->getGameId() == "bifi2") {
+		addView(new SpecialScreenView(Common::Path("INTROS.DAT/4"), Common::Path("INTROS.DAT/5")));
+	}
+	else if (g_engine->getGameId() == "bstage") {
+		addView(new SpecialScreenView(Common::Path("ADLOGO.DAT/3"), Common::Path("ADLOGO.DAT/4")));
+	}
+	else if (g_engine->getGameId() == "capzins") {
+		addView(new SpecialScreenView(Common::Path("INTROS.DAT/8"), Common::Path("INTROS.DAT/9")));
+	}
+	else if (g_engine->getGameId() == "schatten") {
+		addView(new SpecialScreenView(Common::Path("INTROS.DAT/8"), Common::Path("INTROS.DAT/9")));
+	}
+	else if (g_engine->getGameId() == "telekom2") {
+		addView(new SpecialScreenView(Common::Path("TMENUE.DAT/0"), Common::Path("TMENUE.DAT/1"), SpecialScreenView::Flags::PlainPalette));
+	}
+	else {
+		addView("View1");
+	}
 
 	Common::Event e;
 	while (!_views.empty() && !shouldQuit()) {
