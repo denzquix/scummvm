@@ -33,6 +33,7 @@
 #include "common/substream.h"
 #include "common/textconsole.h"
 
+#include "graphics/cursorman.h"
 #include "graphics/palette.h"
 #include "graphics/paletteman.h"
 #include "graphics/surface.h"
@@ -628,6 +629,29 @@ bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourc
     surface.free();
     return false;
   }
+  return true;
+}
+
+bool ResourceManager::loadCursorResource(Common::SeekableReadStream *resourceStream, uint32 keyColor) const {
+  if (!resourceStream) {
+    return false;
+  }
+  uint16 width = resourceStream->readUint16LE();
+  uint16 height = resourceStream->readUint16LE();
+  uint16 hotspotX = resourceStream->readUint16LE();
+  uint16 hotspotY = resourceStream->readUint16LE();
+  if (resourceStream->err() || width == 0 || height == 0 || width > 256 || height > 256) {
+    return false;
+  }
+  uint32 dataLen = width * height;
+  byte *cursorData = new byte[dataLen];
+  if (resourceStream->read(cursorData, dataLen) != dataLen) {
+    delete[] cursorData;
+    return false;
+  }
+  CursorMan.replaceCursor(cursorData, width, height, hotspotX, hotspotY, keyColor);
+  CursorMan.showMouse(true);
+  delete[] cursorData;
   return true;
 }
 
