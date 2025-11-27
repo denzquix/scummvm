@@ -10,6 +10,7 @@ MODULE_OBJS = \
 	room_view.o \
 	messages.o \
 	metaengine.o \
+	screen_anim_view.o \
 	special_screen_view.o \
 	view.o \
 	view1.o

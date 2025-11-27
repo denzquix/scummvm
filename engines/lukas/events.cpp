@@ -25,6 +25,7 @@
 #include "lukas/events.h"
 #include "lukas/lukas.h"
 #include "lukas/views.h"
+#include "lukas/screen_anim_view.h"
 #include "lukas/special_screen_view.h"
 #include "lukas/room_view.h"
 
@@ -78,6 +79,7 @@ void Events::runGame() {
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/8"), Common::Path("INTROS.DAT/9")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/6"), Common::Path("INTROS.DAT/7")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/4"), Common::Path("INTROS.DAT/5")));
+		addView(new ScreenAnimView(Common::Path("INTROS.DAT/0"), 1, 41, Common::Path("INTROS.DAT/0/0")));
 	}
 	else if (g_engine->getGameId() == "schatten") {
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/0"));
@@ -100,6 +102,7 @@ void Events::runGame() {
 		addView(new RoomView(Common::Path("PANELS.DAT/0"), Common::Path("PANELS.DAT/1")));
 		addView(new SpecialScreenView(Common::Path("TMENUE.DAT/0"), Common::Path("TMENUE.DAT/1"), SpecialScreenView::Flags::PlainPalette));
 		addView(new SpecialScreenView(Common::Path("FDANIM.DAT/0"), Common::Path("FDANIM.DAT/1"), SpecialScreenView::Flags::PlainPalette));
+		addView(new ScreenAnimView(Common::Path("TKANIM.DAT"), 0, 63, Common::Path("TKANIM.DAT/63")));
 	}
 	else {
 		addView("View1");

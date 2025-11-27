@@ -83,6 +83,8 @@ public:
 
 	bool loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
+	bool loadDeltaImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
+
 	bool loadIconResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
 	bool loadCursorResource(Common::SeekableReadStream *resourceStream, uint32 keyColor = 0) const;

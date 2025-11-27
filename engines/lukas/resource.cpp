@@ -574,15 +574,25 @@ Common::Array<DialogueLine> ResourceManager::getDialogue(Common::SeekableReadStr
 
 bool ResourceManager::loadPlainPaletteResource(Common::SeekableReadStream *resourceStream) const {
   if (!resourceStream) {
+    warning("unable to load palette: null stream");
     return false;
   }
   byte palette[Graphics::PALETTE_SIZE];
   uint32 read = resourceStream->read(palette, Graphics::PALETTE_SIZE);
-  if (read == 0 || resourceStream->err() || read%3 != 0 || !resourceStream->eos()) {
+  if (read == 0) {
+    warning("unable to load palette: no data");
+    return false;
+  }
+  if (resourceStream->err()) {
+    warning("unable to load palette: stream error");
+  }
+  if (read%3 != 0) {
+    warning("unable to load palette: not a multiple of 3");
     return false;
   }
   for (uint32 i = 0; i < read; i++) {
     if (palette[i] > 63){
+      warning("unable to load palette: out of 6-bit range");
       return false;
     }
     palette[i] = PALETTE_6BIT_TO_8BIT(palette[i]);
@@ -616,6 +626,9 @@ bool ResourceManager::loadDeltaPaletteResource(Common::SeekableReadStream *resou
 static const uint32 MAX_IMAGE_SIZE = 1024 * 1024;
 
 bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const {
+  if (!resourceStream) {
+    return false;
+  }
   uint16 width = resourceStream->readUint16LE();
   uint16 height = resourceStream->readUint16LE();
   uint32 dataSize = width * height;
@@ -627,6 +640,45 @@ bool ResourceManager::loadPlainImageResource(Common::SeekableReadStream *resourc
   if (resourceStream->read(surface.getPixels(), dataSize) != dataSize) {
     warning("image loading failed: did not read enough data");
     surface.free();
+    return false;
+  }
+  return true;
+}
+
+bool ResourceManager::loadDeltaImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const {
+  if (!resourceStream) {
+    return false;
+  }
+  uint16 width = resourceStream->readUint16LE();
+  uint16 height = resourceStream->readUint16LE();
+  uint32 dataSize = width * height;
+  if (dataSize == 0 || dataSize > MAX_IMAGE_SIZE) {
+    warning("image loading failed: invalid dimensions %dx%d", width, height);
+    return false;
+  }
+  if (surface.w != width || surface.h != height) {
+    warning("expected %dx%d got %dx%d", width, height, surface.w, surface.h);
+    return false;
+  }
+  uint16 offset = resourceStream->readUint16LE();
+  uint16 count = resourceStream->readUint16LE();
+  byte* pixels = (byte*)surface.getPixels() + offset;
+  for (uint16 i = 0; i < count; i++) {
+    byte afterOffset = resourceStream->readByte();
+    byte runCount = resourceStream->readByte();
+    if ((offset + runCount + afterOffset) > (width * height)) {
+      warning("image loading failed: data exceeded available space");
+      return false;
+    }
+    if (resourceStream->read(pixels, runCount) != runCount) {
+      warning("image loading failed: did not read enough data");
+      surface.free();
+      return false;
+    }
+    pixels += runCount + afterOffset;
+  }
+  if (resourceStream->err()) {
+    warning("image loading failed: stream error");
     return false;
   }
   return true;
