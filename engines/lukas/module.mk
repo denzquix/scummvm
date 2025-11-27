@@ -7,6 +7,7 @@ MODULE_OBJS = \
 	events.o \
 	resource.o \
 	room.o \
+	room_view.o \
 	messages.o \
 	metaengine.o \
 	special_screen_view.o \
