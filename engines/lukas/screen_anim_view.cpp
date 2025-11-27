@@ -28,12 +28,13 @@
 
 namespace Lukas {
 
-ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, uint frameCount, Common::Path paletteRes) : View("ScreenAnimView"),
+ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags) : View("ScreenAnimView"),
   _frameContainerRes(frameContainerRes),
   _paletteRes(paletteRes),
   _firstFrame(firstFrame),
   _frameCount(frameCount),
-  _nextFrame(0) {
+  _nextFrame(0),
+  _flags(flags) {
 
   _surf.create(g_engine->getScreen()->w, g_engine->getScreen()->h, Graphics::PixelFormat::createFormatCLUT8());
 }
@@ -41,8 +42,15 @@ ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, 
 bool ScreenAnimView::msgFocus(const FocusMessage &msg) {
   if (!_paletteRes.empty()) {
     Common::ScopedPtr<Common::SeekableReadStream> palStream(g_engine->getResourceManager().loadResource(_paletteRes));
-    if (!g_engine->getResourceManager().loadPlainPaletteResource(palStream.get())) {
-      warning("unable to load palette resource");
+    if (_flags & Flags::PlainPalette) {
+      if (!g_engine->getResourceManager().loadPlainPaletteResource(palStream.get())) {
+        warning("unable to load palette resource");
+      }
+    }
+    else {
+      if (!g_engine->getResourceManager().loadDeltaPaletteResource(palStream.get())) {
+        warning("unable to load palette resource");
+      }
     }
   }
 	return true;

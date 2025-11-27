@@ -29,6 +29,12 @@
 namespace Lukas {
 
 class ScreenAnimView : public View {
+
+public:
+	enum Flags {
+		None = 0,
+		PlainPalette = 1,
+	};
 	
 private:
 	Common::Path _frameContainerRes;
@@ -37,9 +43,10 @@ private:
   uint _firstFrame;
   uint _frameCount;
   uint _nextFrame;
+	Flags _flags;
 
 public:
-	ScreenAnimView(Common::Path frameContainer, uint firstFrame, uint frameCount, Common::Path paletteRes);
+	ScreenAnimView(Common::Path frameContainer, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags = Flags::None);
 	virtual ~ScreenAnimView() {}
 
 	bool msgFocus(const FocusMessage &msg) override;
