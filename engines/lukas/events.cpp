@@ -53,19 +53,28 @@ void Events::runGame() {
 	if (g_engine->getGameId() == "bifi2") {
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/0"));
 		g_engine->loadCursor(Common::Path("CMBMOU.DAT/4"));
+		for (uint16 i = 2; i <= 40; i++) {
+			g_engine->addInvIcon(Common::Path(Common::String::format("PANELS.DAT/%d", i)));
+		}
 		addView(new RoomView(Common::Path("PANELS.DAT/0"), Common::Path("PANELS.DAT/1")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/4"), Common::Path("INTROS.DAT/5")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/2"), Common::Path("INTROS.DAT/3")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/0"), Common::Path("INTROS.DAT/1")));
 	}
 	else if (g_engine->getGameId() == "bstage") {
+		for (uint16 i = 11; i <= 25; i++) {
+			g_engine->addInvIcon(Common::Path(Common::String::format("PANELS.DAT/%d", i)));
+		}
 		addView(new SpecialScreenView(Common::Path("ADLOGO.DAT/3"), Common::Path("ADLOGO.DAT/4")));
 		addView(new SpecialScreenView(Common::Path("ADLOGO.DAT/1"), Common::Path("ADLOGO.DAT/2")));
 	}
 	else if (g_engine->getGameId() == "capzins") {
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/0"));
 		g_engine->loadCursor(Common::Path("CMBMOU.DAT/4"));
-		addView(new RoomView(Common::Path("PANEL1.DAT/0"), Common::Path("PANEL1.DAT/1")));
+		for (uint16 i = 2; i <= 21; i++) {
+			g_engine->addInvIcon(Common::Path(Common::String::format("PANEL0.DAT/%d", i)));
+		}
+		addView(new RoomView(Common::Path("PANEL0.DAT/0"), Common::Path("PANEL0.DAT/1")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/8"), Common::Path("INTROS.DAT/9")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/6"), Common::Path("INTROS.DAT/7")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/4"), Common::Path("INTROS.DAT/5")));
@@ -73,6 +82,9 @@ void Events::runGame() {
 	else if (g_engine->getGameId() == "schatten") {
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/0"));
 		g_engine->loadCursor(Common::Path("CMBMOU.DAT/4"));
+		for (uint16 i = 2; i <= 23; i++) {
+			g_engine->addInvIcon(Common::Path(Common::String::format("PANELS.DAT/%d", i)));
+		}
 		addView(new RoomView(Common::Path("PANELS.DAT/0"), Common::Path("PANELS.DAT/1")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/8"), Common::Path("INTROS.DAT/9")));
 		addView(new SpecialScreenView(Common::Path("INTROS.DAT/6"), Common::Path("INTROS.DAT/7")));
@@ -82,6 +94,9 @@ void Events::runGame() {
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/0"));
 		g_engine->loadDeltaPalette(Common::Path("CMBMOU.DAT/2"));
 		g_engine->loadCursor(Common::Path("CMBMOU.DAT/6"), 0xC0);
+		for (uint16 i = 3; i <= 25; i++) {
+			g_engine->addInvIcon(Common::Path(Common::String::format("PANELS.DAT/%d", i)));
+		}
 		addView(new RoomView(Common::Path("PANELS.DAT/0"), Common::Path("PANELS.DAT/1")));
 		addView(new SpecialScreenView(Common::Path("TMENUE.DAT/0"), Common::Path("TMENUE.DAT/1"), SpecialScreenView::Flags::PlainPalette));
 		addView(new SpecialScreenView(Common::Path("FDANIM.DAT/0"), Common::Path("FDANIM.DAT/1"), SpecialScreenView::Flags::PlainPalette));

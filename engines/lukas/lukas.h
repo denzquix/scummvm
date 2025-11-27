@@ -33,6 +33,7 @@
 #include "engines/engine.h"
 #include "engines/savestate.h"
 #include "graphics/screen.h"
+#include "graphics/surface.h"
 
 #include "lukas/detection.h"
 #include "lukas/events.h"
@@ -47,6 +48,7 @@ private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	ResourceManager _resourceManager;
+	Common::Array<Graphics::Surface> _invIcons;
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -117,6 +119,26 @@ public:
 	bool loadDeltaPalette(Common::Path resPath, uint32 keyColor = 0) {
 		Common::SharedPtr<Common::SeekableReadStream> resStream(_resourceManager.loadResource(resPath));
 		return _resourceManager.loadDeltaPaletteResource(resStream.get());
+	}
+
+	bool addInvIcon(Common::Path resPath) {
+		Common::SharedPtr<Common::SeekableReadStream> resStream(_resourceManager.loadResource(resPath));
+		_invIcons.resize(_invIcons.size() + 1);
+		if (_resourceManager.loadIconResource(resStream.get(), _invIcons.back())) {
+			return true;
+		}
+		else {
+			_invIcons.pop_back();
+			return false;
+		}
+	}
+
+	uint getInvIconCount() {
+		return _invIcons.size();
+	}
+
+	Graphics::Surface& getInvIcon(uint idx) {
+		return _invIcons[idx];
 	}
 };
 
