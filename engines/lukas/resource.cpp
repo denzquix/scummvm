@@ -655,9 +655,14 @@ bool ResourceManager::loadIconResource(Common::SeekableReadStream *resourceStrea
   }
   else if (mode == 1) {
     for (uint y = 0; y < height; y++) {
-      byte runMode = resourceStream->readByte();
       byte runLength = resourceStream->readByte();
+      byte runMode = resourceStream->readByte();
       switch (runMode) {
+        default: {
+          surface.free();
+          warning("image loading failed: unknown line mode %d", runMode);
+          return false;
+        }
         case 0x00: {
           surface.free();
           warning("image loading failed: premature end of data");
@@ -746,7 +751,7 @@ bool ResourceManager::loadIconResource(Common::SeekableReadStream *resourceStrea
         case 0x0c: {
           if (runLength < 3) {
             surface.free();
-            warning("image loading failed: not enough data for line mode %d", runMode);
+            warning("image loading failed: not enough data for line mode %x", runMode);
             return false;
           }
           byte skipCount1 = resourceStream->readByte();
@@ -754,17 +759,17 @@ bool ResourceManager::loadIconResource(Common::SeekableReadStream *resourceStrea
           byte copyCount = resourceStream->readByte();
           if (runLength != 3+copyCount) {
             surface.free();
-            warning("image loading failed: wrong data length for line mode %d", runMode);
+            warning("image loading failed: wrong data length for line mode %x", runMode);
             return false;
           }
           if ((skipCount1+copyCount+skipCount2) != width) {
             surface.free();
-            warning("image loading failed: wrong pixel width for line mode %d", runMode);
+            warning("image loading failed: wrong pixel width for line mode %x", runMode);
             return false;
           }
           if (resourceStream->read((byte*)surface.getPixels() + (y * width) + skipCount1, copyCount) != copyCount) {
             surface.free();
-            warning("image loading failed: not enough data for line mode %d", runMode);
+            warning("image loading failed: not enough data for line mode %x", runMode);
             return false;
           }
           break;
@@ -772,7 +777,7 @@ bool ResourceManager::loadIconResource(Common::SeekableReadStream *resourceStrea
         case 0x0e: {
           if (runLength < 4) {
             surface.free();
-            warning("image loading failed: not enough data for line mode %d", runMode);
+            warning("image loading failed: not enough data for line mode %x", runMode);
             return false;
           }
           uint16 x = resourceStream->readByte();
@@ -787,14 +792,14 @@ bool ResourceManager::loadIconResource(Common::SeekableReadStream *resourceStrea
             }
             if (resourceStream->read((byte*)surface.getPixels() + (y * width) + x, copyCount) != copyCount) {
               surface.free();
-              warning("image loading failed: not enough data for line mode %d", runMode);
+              warning("image loading failed: not enough data for line mode %x", runMode);
               return false;
             }
-            x += skipCount;
+            x += copyCount + skipCount;
           }
           if (x != width) {
             surface.free();
-            warning("image loading failed: wrong pixel width for line mode %d", runMode);
+            warning("image loading failed: wrong pixel width for line mode %x", runMode);
             return false;
           }
           break;
