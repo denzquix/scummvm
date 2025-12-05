@@ -35,6 +35,7 @@ Console::Console(LukasEngine *engine) : GUI::Debugger() {
 	registerCmd("subres",   WRAP_METHOD(Console, Cmd_subres));
 	registerCmd("roomobjs", WRAP_METHOD(Console, Cmd_roomobjs));
 	registerCmd("dlgres",   WRAP_METHOD(Console, Cmd_dlgres));
+	registerCmd("findres",  WRAP_METHOD(Console, Cmd_findres));
 }
 
 Console::~Console() {
@@ -212,6 +213,70 @@ bool Console::Cmd_dlgres(int argc, const char **argv) {
 		}
 	}
 	debugPrintf("\n");
+	return true;
+}
+
+bool Console::Cmd_findres(int argc, const char **argv) {
+	if (argc < 2) {
+		debugPrintf("Usage: findres room <roomnum>\n");
+		debugPrintf("Usage: findres roomobjs <roomnum>\n");
+		debugPrintf("Usage: findres roombg <roomnum>\n");
+		debugPrintf("Usage: findres roomdlg <roomnum> <dlgnum>\n");
+		return true;
+	}
+	Common::String str(argv[1]);
+	Common::Path result;
+	if (str.equalsIgnoreCase("room")) {
+		if (argc != 3) {
+			debugPrintf("Expecting room number argument\n");
+			return true;
+		}
+		int num = (int)Common::String(argv[2]).asUint64();
+		if (!_engine->getRoomResourcePath(num, result)) {
+			result = Common::Path();
+		}
+	}
+	else if (str.equalsIgnoreCase("roomobjs")) {
+		if (argc != 3) {
+			debugPrintf("Expecting room number argument\n");
+			return true;
+		}
+		int num = (int)Common::String(argv[2]).asUint64();
+		if (!_engine->getRoomObjectsResourcePath(num, result)) {
+			result = Common::Path();
+		}
+	}
+	else if (str.equalsIgnoreCase("roombg")) {
+		if (argc != 3) {
+			debugPrintf("Expecting room number argument\n");
+			return true;
+		}
+		int num = (int)Common::String(argv[2]).asUint64();
+		if (!_engine->getRoomBackgroundResourcePath(num, result)) {
+			result = Common::Path();
+		}
+	}
+	else if (str.equalsIgnoreCase("roomdlg")) {
+		if (argc != 4) {
+			debugPrintf("Expecting room number and dialogue number argument\n");
+			return true;
+		}
+		int num1 = (int)Common::String(argv[2]).asUint64();
+		int num2 = (int)Common::String(argv[3]).asUint64();
+		if (!_engine->getRoomDialogueResourcePath(num1, num2, result)) {
+			result = Common::Path();
+		}
+	}
+	else {
+		debugPrintf("Unknown label: %s\n", argv[1]);
+		return true;
+	}
+	if (result.empty()) {
+		debugPrintf("(Failed to finf resource)\n");
+	}
+	else {
+		debugPrintf("Resource path: %s\n", result.toString().c_str());
+	}
 	return true;
 }
 

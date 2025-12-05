@@ -30,68 +30,104 @@ const PlainGameDescriptor lukasGames[] = {
 	{ 0, 0 }
 };
 
-const ADGameDescription gameDescriptions[] = {
+const LukasGameDescription gameDescriptions[] = {
 	{
-		"bifi2",
-		nullptr,
 		{
-			{"xp00.exe", 0, "f5e23587bea3a83b825ce0bff82e9fd8", 33031},
-			AD_LISTEND,
+			"bifi2",
+			nullptr,
+			{
+				{"xp00.exe", 0, "f5e23587bea3a83b825ce0bff82e9fd8", 33031},
+				AD_LISTEND,
+			},
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NONE)
 		},
-		Common::DE_DEU,
-		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		"BFROOM.DAT/%d",
+		"BFROOM.DAT/%d/5",
+		"BFROOM.DAT/%d/4",
+		"BFROOM.DAT/%d/3/%d",
 	},
 	{
-		"bstage",
-		nullptr,
 		{
-			{"xp00.exe", 0, "861dfd29731049b0b9ea87fa0861db68", 57447},
-			AD_LISTEND,
+			"bstage",
+			nullptr,
+			{
+				{"xp00.exe", 0, "861dfd29731049b0b9ea87fa0861db68", 57447},
+				AD_LISTEND,
+			},
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NONE)
 		},
-		Common::DE_DEU,
-		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		"LEVL%02d.DAT",
+		nullptr,
+		nullptr,
+		"LEVL%02d.DAT/2/%d",
 	},
 	{
-		"capzins",
-		nullptr,
 		{
-  		{"xp00.exe", 0, "863fb3bdbecc62730c2fa1f617b57b30", 38007},
-			AD_LISTEND,
+			"capzins",
+			nullptr,
+			{
+				{"xp00.exe", 0, "863fb3bdbecc62730c2fa1f617b57b30", 38007},
+				AD_LISTEND,
+			},
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NONE)
 		},
-		Common::DE_DEU,
-		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		"CZROOM.DAT/%d",
+		"CZROOM.DAT/%d/5",
+		"CZROOM.DAT/%d/4",
+		"CZROOM.DAT/%d/3/%d",
 	},
 	{
-		"schatten",
-		nullptr,
 		{
-  		{"xp00.exe", 0, "61a4147d354628f7e3684407b5ca17b8", 33367},
-			AD_LISTEND,
+			"schatten",
+			nullptr,
+			{
+				{"xp00.exe", 0, "61a4147d354628f7e3684407b5ca17b8", 33367},
+				AD_LISTEND,
+			},
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NONE)
 		},
-		Common::DE_DEU,
-		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		"DSROOM.DAT/%d",
+		"DSROOM.DAT/%d/5",
+		"DSROOM.DAT/%d/4",
+		"DSROOM.DAT/%d/3/%d",
 	},
 	{
-		"telekom2",
-		nullptr,
 		{
-  		{"xp00.exe", 0, "5a05d28efd68596852cc560481833168", 31943},
-			AD_LISTEND,
+			"telekom2",
+			nullptr,
+			{
+				{"xp00.exe", 0, "5a05d28efd68596852cc560481833168", 31943},
+				AD_LISTEND,
+			},
+			Common::DE_DEU,
+			Common::kPlatformDOS,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NONE)
 		},
-		Common::DE_DEU,
-		Common::kPlatformDOS,
-		ADGF_UNSTABLE,
-		GUIO1(GUIO_NONE)
+		"ROOM%02d.DAT",
+		"ROOM%02d.DAT/0",
+		"ROOM%02d.DAT/1",
+		nullptr,
 	},
-	AD_TABLE_END_MARKER
+	{
+		AD_TABLE_END_MARKER,
+		nullptr,
+		nullptr,
+		nullptr,
+		nullptr,
+	}
 };
 
 } // End of namespace Lukas

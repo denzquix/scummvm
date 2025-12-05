@@ -52,7 +52,7 @@ const ADExtraGuiOptionsMap *LukasMetaEngine::getAdvancedExtraGuiOptions() const 
 	return Lukas::optionsList;
 }
 
-Common::Error LukasMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {
+Common::Error LukasMetaEngine::createInstance(OSystem *syst, Engine **engine, const Lukas::LukasGameDescription *desc) const {
 	*engine = new Lukas::LukasEngine(syst, desc);
 	return Common::kNoError;
 }

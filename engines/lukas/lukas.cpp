@@ -34,7 +34,7 @@ namespace Lukas {
 
 LukasEngine *g_engine;
 
-LukasEngine::LukasEngine(OSystem *syst, const ADGameDescription *gameDesc) : Engine(syst),
+LukasEngine::LukasEngine(OSystem *syst, const LukasGameDescription *gameDesc) : Engine(syst),
 	_gameDescription(gameDesc), _randomSource("Lukas"),
 	_resourceManager(ConfMan.getPath("path")) {
 	g_engine = this;
@@ -44,11 +44,11 @@ LukasEngine::~LukasEngine() {
 }
 
 uint32 LukasEngine::getFeatures() const {
-	return _gameDescription->flags;
+	return _gameDescription->desc.flags;
 }
 
 Common::String LukasEngine::getGameId() const {
-	return _gameDescription->gameId;
+	return _gameDescription->desc.gameId;
 }
 
 Common::Error LukasEngine::run() {
@@ -72,6 +72,43 @@ Common::Error LukasEngine::syncGame(Common::Serializer &s) {
 	s.syncAsUint32LE(dummy);
 
 	return Common::kNoError;
+}
+
+bool LukasEngine::getRoomResourcePath(int roomNumber, Common::Path &outPath) {
+	if (!_gameDescription->roomRootResFmt) {
+		return false;
+	}
+	else {
+		outPath = Common::String::format(_gameDescription->roomRootResFmt, roomNumber);
+		return true;
+	}
+}
+bool LukasEngine::getRoomBackgroundResourcePath(int roomNumber, Common::Path &outPath) {
+	if (!_gameDescription->roomBgResFmt) {
+		return false;
+	}
+	else {
+		outPath = Common::String::format(_gameDescription->roomBgResFmt, roomNumber);
+		return true;
+	}
+}
+bool LukasEngine::getRoomDialogueResourcePath(int roomNumber, int dialogueNumber, Common::Path &outPath) {
+	if (!_gameDescription->roomDialogueResFmt) {
+		return false;
+	}
+	else {
+		outPath = Common::String::format(_gameDescription->roomDialogueResFmt, roomNumber, dialogueNumber);
+		return true;
+	}
+}
+bool LukasEngine::getRoomObjectsResourcePath(int roomNumber, Common::Path &outPath) {
+	if (!_gameDescription->roomObjectsResFmt) {
+		return false;
+	}
+	else {
+		outPath = Common::String::format(_gameDescription->roomObjectsResFmt, roomNumber);
+		return true;
+	}
 }
 
 } // End of namespace Lukas

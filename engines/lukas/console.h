@@ -35,6 +35,7 @@ private:
 	bool Cmd_subres(int argc, const char **argv);
 	bool Cmd_roomobjs(int argc, const char **argv);
 	bool Cmd_dlgres(int argc, const char **argv);
+	bool Cmd_findres(int argc, const char **argv);
 	LukasEngine *_engine;
 	void debugPrintControlString(const Common::U32String &ustr, Common::CodePage page);
 public:

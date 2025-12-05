@@ -45,7 +45,7 @@ struct LukasGameDescription;
 
 class LukasEngine : public Engine, public Events {
 private:
-	const ADGameDescription *_gameDescription;
+	const LukasGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	ResourceManager _resourceManager;
 	Common::Array<Graphics::Surface> _invIcons;
@@ -61,7 +61,7 @@ protected:
 	}
 
 public:
-	LukasEngine(OSystem *syst, const ADGameDescription *gameDesc);
+	LukasEngine(OSystem *syst, const LukasGameDescription *gameDesc);
 	~LukasEngine() override;
 
 	uint32 getFeatures() const;
@@ -140,6 +140,11 @@ public:
 	Graphics::Surface& getInvIcon(uint idx) {
 		return _invIcons[idx];
 	}
+
+	bool getRoomResourcePath(int roomNumber, Common::Path &outPath);
+	bool getRoomBackgroundResourcePath(int roomNumber, Common::Path &outPath);
+	bool getRoomDialogueResourcePath(int roomNumber, int dialogueNumber, Common::Path &outPath);
+	bool getRoomObjectsResourcePath(int roomNumber, Common::Path &outPath);
 };
 
 extern LukasEngine *g_engine;

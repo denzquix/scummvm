@@ -34,15 +34,27 @@ enum LukasDebugChannels {
 	kDebugScript,
 };
 
+struct LukasGameDescription {
+	AD_GAME_DESCRIPTION_HELPERS(desc);
+
+	ADGameDescription desc;
+
+	// Resource format strings
+	const char *roomRootResFmt;
+	const char *roomBgResFmt;
+	const char *roomObjectsResFmt;
+	const char *roomDialogueResFmt;
+};
+
 extern const PlainGameDescriptor lukasGames[];
 
-extern const ADGameDescription gameDescriptions[];
+extern const LukasGameDescription gameDescriptions[];
 
 #define GAMEOPTION_ORIGINAL_SAVELOAD GUIO_GAMEOPTIONS1
 
 } // End of namespace Lukas
 
-class LukasMetaEngineDetection : public AdvancedMetaEngineDetection<ADGameDescription> {
+class LukasMetaEngineDetection : public AdvancedMetaEngineDetection<Lukas::LukasGameDescription> {
 	static const DebugChannelDef debugFlagList[];
 
 public:
