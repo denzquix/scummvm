@@ -900,4 +900,58 @@ bool ResourceManager::loadCursorResource(Common::SeekableReadStream *resourceStr
   return true;
 }
 
+bool ResourceManager::loadPalettePatch(const Common::Path &resourcePath, PalettePatch& outPatch, bool fromRaw) const {
+  Common::SeekableReadStream* stream = loadResource(resourcePath);
+  if (!stream) {
+    outPatch.offset = 0;
+    outPatch.paletteData.clear();
+    return false;
+  }
+  if (fromRaw) {
+    outPatch.offset = 0;
+    outPatch.paletteData.resize(Graphics::PALETTE_SIZE);
+    uint32 read = stream->read(outPatch.paletteData.data(), Graphics::PALETTE_SIZE);
+    if (read == 0) {
+      warning("unable to load palette: no data");
+      return false;
+    }
+    if (stream->err()) {
+      warning("unable to load palette: stream error");
+      return false;
+    }
+    if (read%3 != 0) {
+      warning("unable to load palette: not a multiple of 3");
+      return false;
+    }
+    outPatch.paletteData.resize(read);
+    for (uint32 i = 0; i < read; i++) {
+      if (outPatch.paletteData[i] > 63){
+        warning("unable to load palette: out of 6-bit range");
+        return false;
+      }
+      outPatch.paletteData[i] = PALETTE_6BIT_TO_8BIT(outPatch.paletteData[i]);
+    }
+    return true;
+  }
+  else {
+    outPatch.offset = stream->readByte();
+    byte size = stream->readByte();
+    outPatch.paletteData.resize(size*3);
+    if (stream->read(outPatch.paletteData.data(), size * 3) != size * 3U || stream->err()) {
+      outPatch.offset = 0;
+      outPatch.paletteData.clear();
+      return false;
+    }
+    for (uint i = 0; i < size*3U; i++) {
+      if (outPatch.paletteData[i] > 63){
+        warning("unable to load palette: out of 6-bit range");
+        return false;
+      }
+      outPatch.paletteData[i] = PALETTE_6BIT_TO_8BIT(outPatch.paletteData[i]);
+    }
+    return true;
+  }
+}
+
+
 } // End of namespace Lukas

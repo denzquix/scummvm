@@ -39,6 +39,11 @@ namespace Lukas {
 
 #define MAX_RESOURCE_SIZE (1024*1024*16)
 
+struct PalettePatch {
+	byte offset;
+	Common::Array<byte> paletteData;
+};
+
 /**
  * Resource manager for Lukas engine DAT files.
  */
@@ -80,6 +85,8 @@ public:
 	bool loadPlainPaletteResource(Common::SeekableReadStream *resourceStream) const;
 
 	bool loadDeltaPaletteResource(Common::SeekableReadStream *resourceStream) const;
+
+	bool loadPalettePatch(const Common::Path &resourcePath, PalettePatch& outPatch, bool fromRaw=false) const;
 
 	bool loadPlainImageResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
