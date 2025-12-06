@@ -22,7 +22,9 @@
 #ifndef LUKAS_ROOM_H
 #define LUKAS_ROOM_H
 
+#include "common/array.h"
 #include "common/ustr.h"
+#include "dialogue.h"
 
 namespace Lukas {
 
@@ -39,6 +41,11 @@ struct RoomObjectInfo {
   Common::U32String lookText;
   Common::U32String closeText;
   Common::U32String takeText;
+};
+
+struct Room {
+  Common::Array<RoomObjectInfo> objects;
+  Common::Array<Common::Array<DialogueLine>> dialogues;
 };
 
 } // namespace Lukas

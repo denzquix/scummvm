@@ -143,8 +143,10 @@ public:
 
 	bool getRoomResourcePath(int roomNumber, Common::Path &outPath);
 	bool getRoomBackgroundResourcePath(int roomNumber, Common::Path &outPath);
-	bool getRoomDialogueResourcePath(int roomNumber, int dialogueNumber, Common::Path &outPath);
+	bool getRoomDialoguesResourcePath(int roomNumber, Common::Path &outPath);
 	bool getRoomObjectsResourcePath(int roomNumber, Common::Path &outPath);
+
+	bool loadRoom(int roomNumber, Room& room);
 };
 
 extern LukasEngine *g_engine;

@@ -92,12 +92,12 @@ bool LukasEngine::getRoomBackgroundResourcePath(int roomNumber, Common::Path &ou
 		return true;
 	}
 }
-bool LukasEngine::getRoomDialogueResourcePath(int roomNumber, int dialogueNumber, Common::Path &outPath) {
+bool LukasEngine::getRoomDialoguesResourcePath(int roomNumber, Common::Path &outPath) {
 	if (!_gameDescription->roomDialogueResFmt) {
 		return false;
 	}
 	else {
-		outPath = Common::String::format(_gameDescription->roomDialogueResFmt, roomNumber, dialogueNumber);
+		outPath = Common::String::format(_gameDescription->roomDialogueResFmt, roomNumber);
 		return true;
 	}
 }
@@ -109,6 +109,30 @@ bool LukasEngine::getRoomObjectsResourcePath(int roomNumber, Common::Path &outPa
 		outPath = Common::String::format(_gameDescription->roomObjectsResFmt, roomNumber);
 		return true;
 	}
+}
+
+bool LukasEngine::loadRoom(int roomNumber, Room& room) {
+	Common::Path path;
+	if (getRoomObjectsResourcePath(roomNumber, path)) {
+		Common::ScopedPtr<Common::SeekableReadStream> ptr(_resourceManager.loadResource(path));
+		room.objects = _resourceManager.getRoomObjectInfo(ptr.get());
+	}
+	else {
+		room.objects.clear();
+	}
+	if (getRoomDialoguesResourcePath(roomNumber, path)) {
+		Common::ScopedPtr<Common::SeekableReadStream> ptr(_resourceManager.loadResource(path));
+		auto spans = _resourceManager.getSubresourceSpans(ptr.get());
+		room.dialogues.resize(spans.size());
+		for (uint i = 0; i < spans.size(); i++) {
+			Common::ScopedPtr<Common::SeekableReadStream> ptr2(_resourceManager.getSubresource(ptr.get(), spans[i].first, spans[i].second, DisposeAfterUse::NO));
+			room.dialogues[i] = _resourceManager.getDialogue(ptr2.get());
+		}
+	}
+	else {
+		room.dialogues.clear();
+	}
+	return true;
 }
 
 } // End of namespace Lukas

@@ -218,10 +218,7 @@ bool Console::Cmd_dlgres(int argc, const char **argv) {
 
 bool Console::Cmd_findres(int argc, const char **argv) {
 	if (argc < 2) {
-		debugPrintf("Usage: findres room <roomnum>\n");
-		debugPrintf("Usage: findres roomobjs <roomnum>\n");
-		debugPrintf("Usage: findres roombg <roomnum>\n");
-		debugPrintf("Usage: findres roomdlg <roomnum> <dlgnum>\n");
+		debugPrintf("Usage: findres (room|roomobjs|roombg|roomdlg) <roomnum>\n");
 		return true;
 	}
 	Common::String str(argv[1]);
@@ -257,13 +254,12 @@ bool Console::Cmd_findres(int argc, const char **argv) {
 		}
 	}
 	else if (str.equalsIgnoreCase("roomdlg")) {
-		if (argc != 4) {
-			debugPrintf("Expecting room number and dialogue number argument\n");
+		if (argc != 3) {
+			debugPrintf("Expecting room number argument\n");
 			return true;
 		}
-		int num1 = (int)Common::String(argv[2]).asUint64();
-		int num2 = (int)Common::String(argv[3]).asUint64();
-		if (!_engine->getRoomDialogueResourcePath(num1, num2, result)) {
+		int num = (int)Common::String(argv[2]).asUint64();
+		if (!_engine->getRoomDialoguesResourcePath(num, result)) {
 			result = Common::Path();
 		}
 	}
