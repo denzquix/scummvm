@@ -22,6 +22,7 @@
 #include "common/system.h"
 #include "common/ptr.h"
 #include "common/stream.h"
+#include "graphics/palette.h"
 #include "graphics/paletteman.h"
 #include "lukas/lukas.h"
 #include "lukas/special_screen_view.h"
@@ -40,28 +41,46 @@ SpecialScreenView::SpecialScreenView(Common::Path imageRes, Common::Path palette
     }
   }
 
+  g_engine->getResourceManager().loadPalettePatch(paletteRes, _fadeColors, flags & Flags::PlainPalette);
+  updatePalette(0.0);
+}
+
+void SpecialScreenView::updatePalette(float fadeFactor) {
+  byte palette[Graphics::PALETTE_SIZE];
+  g_system->getPaletteManager()->grabPalette(palette, 0, Graphics::PALETTE_COUNT);
+  for (uint i = 0; i < _fadeColors.paletteData.size(); i++) {
+    palette[_fadeColors.offset + i] = _fadeColors.paletteData[i] * fadeFactor;
+  }
+  g_system->getPaletteManager()->setPalette(palette, 0, Graphics::PALETTE_COUNT);
 }
 
 bool SpecialScreenView::msgFocus(const FocusMessage &msg) {
-  if (!_paletteRes.empty()) {
-    Common::ScopedPtr<Common::SeekableReadStream> palStream(g_engine->getResourceManager().loadResource(_paletteRes));
-    if (_flags & Flags::PlainPalette) {
-      if (!g_engine->getResourceManager().loadPlainPaletteResource(palStream.get())) {
-        warning("unable to load palette resource");
-      }
+  switch (_phase) {
+    case Phase::PreFadeIn: {
+      updatePalette(0.0);
+      break;
     }
-    else {
-      if (!g_engine->getResourceManager().loadDeltaPaletteResource(palStream.get())) {
-        warning("unable to load palette resource");
-      }
+    case Phase::FadeIn: {
+      updatePalette(_counter / (float)_fadeInTicks);
+      break;
+    }
+    case Phase::Normal: {
+      updatePalette(1.0);
+      break;
+    }
+    case Phase::FadeOut: {
+      updatePalette(1.0 - (_counter / (float)_fadeOutTicks));
+      break;
     }
   }
 	return true;
 }
 
 bool SpecialScreenView::msgKeypress(const KeypressMessage &msg) {
-	// Any keypress to close the view
-	close();
+  if (_phase == Phase::Normal) {
+    _phase = Phase::FadeOut;
+    _counter = 0;
+  }
 	return true;
 }
 
@@ -71,6 +90,41 @@ void SpecialScreenView::draw() {
 }
 
 bool SpecialScreenView::tick() {
+  switch (_phase) {
+    case Phase::PreFadeIn: {
+      if (++_counter >= _preFadeInTicks) {
+        _phase = Phase::FadeIn;
+        _counter = 0;
+      }
+      break;
+    }
+    case Phase::FadeIn: {
+      updatePalette(_counter / (float)_fadeInTicks);
+      if (++_counter >= _fadeInTicks) {
+        updatePalette(1.0);
+        _phase = Phase::Normal;
+        _counter = 0;
+      }
+      break;
+    }
+    case Phase::Normal: {
+      if (++_counter >= _normalTicks) {
+        _phase = Phase::FadeOut;
+        _counter = 0;
+      }
+      break;
+    }
+    case Phase::FadeOut: {
+      updatePalette(1.0 - (_counter / (float)_fadeOutTicks));
+      if (++_counter >= _fadeOutTicks) {
+        updatePalette(0.0);
+        _phase = Phase::Closed;
+        _counter = 0;
+        close();
+      }
+      break;
+    }
+  }
 	return true;
 }
 

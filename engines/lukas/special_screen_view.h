@@ -24,6 +24,7 @@
 
 #include "common/path.h"
 #include "graphics/surface.h"
+#include "graphics/palette.h"
 #include "lukas/view.h"
 
 namespace Lukas {
@@ -36,11 +37,28 @@ public:
 		PlainPalette = 1,
 	};
 
+	enum Phase {
+		Unset = 0,
+		PreFadeIn = 1,
+		FadeIn = 2,
+		Normal = 3,
+		FadeOut = 4,
+		Closed = 5,
+	};
+
 private:
 	Common::Path _imageRes;
 	Common::Path _paletteRes;
 	Graphics::Surface _surf;
 	Flags _flags;
+	Phase _phase = Phase::PreFadeIn;
+	uint _counter = 0;
+	uint _preFadeInTicks = 3;
+	uint _fadeInTicks = 70;
+	uint _normalTicks = 107;
+	uint _fadeOutTicks = 70;
+	PalettePatch _fadeColors;
+	void updatePalette(float fadeFactor);
 
 public:
 	SpecialScreenView(Common::Path imageRes, Common::Path paletteRes, Flags flags = Flags::None);
