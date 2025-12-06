@@ -49,6 +49,8 @@ private:
 	Common::RandomSource _randomSource;
 	ResourceManager _resourceManager;
 	Common::Array<Graphics::Surface> _invIcons;
+	Common::Array<Common::Array<DialogueLine>> _globalDialogue;
+	Common::Array<Common::Array<DialogueLine>> _globalDialogue2;
 protected:
 	// Engine APIs
 	Common::Error run() override;

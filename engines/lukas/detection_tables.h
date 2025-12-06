@@ -48,6 +48,8 @@ const LukasGameDescription gameDescriptions[] = {
 		"BFROOM.DAT/%d/5",
 		"BFROOM.DAT/%d/4",
 		"BFROOM.DAT/%d/3",
+		"DIALOG.DAT/0",
+		"DIALOG.DAT/1",
 	},
 	{
 		{
@@ -66,6 +68,8 @@ const LukasGameDescription gameDescriptions[] = {
 		nullptr,
 		nullptr,
 		"LEVL%02d.DAT/2",
+		"DIALOG.DAT",
+		nullptr,
 	},
 	{
 		{
@@ -84,6 +88,8 @@ const LukasGameDescription gameDescriptions[] = {
 		"CZROOM.DAT/%d/5",
 		"CZROOM.DAT/%d/4",
 		"CZROOM.DAT/%d/3",
+		"DIALOG.DAT/0",
+		"DIALOG.DAT/1",
 	},
 	{
 		{
@@ -102,6 +108,8 @@ const LukasGameDescription gameDescriptions[] = {
 		"DSROOM.DAT/%d/5",
 		"DSROOM.DAT/%d/4",
 		"DSROOM.DAT/%d/3",
+		"DIALOG.DAT/0",
+		"DIALOG.DAT/1",
 	},
 	{
 		{
@@ -119,6 +127,8 @@ const LukasGameDescription gameDescriptions[] = {
 		"ROOM%02d.DAT",
 		"ROOM%02d.DAT/0",
 		"ROOM%02d.DAT/1",
+		nullptr,
+		"DIALOG.DAT",
 		nullptr,
 	},
 	{

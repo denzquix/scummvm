@@ -38,6 +38,33 @@ LukasEngine::LukasEngine(OSystem *syst, const LukasGameDescription *gameDesc) : 
 	_gameDescription(gameDesc), _randomSource("Lukas"),
 	_resourceManager(ConfMan.getPath("path")) {
 	g_engine = this;
+
+	if (gameDesc->globalDialogueRes) {
+		Common::ScopedPtr<Common::SeekableReadStream> ptr(_resourceManager.loadResource(gameDesc->globalDialogueRes));
+		auto spans = _resourceManager.getSubresourceSpans(ptr.get());
+		_globalDialogue.resize(spans.size());
+		for (uint i = 0; i < spans.size(); i++) {
+			Common::ScopedPtr<Common::SeekableReadStream> ptr2(_resourceManager.getSubresource(ptr.get(), spans[i].first, spans[i].second, DisposeAfterUse::NO));
+			_globalDialogue[i] = _resourceManager.getDialogue(ptr2.get());
+		}
+	}
+	else {
+		_globalDialogue.clear();
+	}
+
+	if (gameDesc->globalDialogue2Res) {
+		Common::ScopedPtr<Common::SeekableReadStream> ptr(_resourceManager.loadResource(gameDesc->globalDialogue2Res));
+		auto spans = _resourceManager.getSubresourceSpans(ptr.get());
+		_globalDialogue2.resize(spans.size());
+		for (uint i = 0; i < spans.size(); i++) {
+			Common::ScopedPtr<Common::SeekableReadStream> ptr2(_resourceManager.getSubresource(ptr.get(), spans[i].first, spans[i].second, DisposeAfterUse::NO));
+			_globalDialogue2[i] = _resourceManager.getDialogue(ptr2.get());
+		}
+	}
+	else {
+		_globalDialogue2.clear();
+	}
+
 }
 
 LukasEngine::~LukasEngine() {

@@ -44,6 +44,8 @@ struct LukasGameDescription {
 	const char *roomBgResFmt;
 	const char *roomObjectsResFmt;
 	const char *roomDialogueResFmt;
+	const char *globalDialogueRes;
+	const char *globalDialogue2Res;
 };
 
 extern const PlainGameDescriptor lukasGames[];
