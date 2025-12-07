@@ -28,14 +28,22 @@
 
 namespace Lukas {
 
-RoomView::RoomView(Common::Path panelImageRes, Common::Path panelPaletteRes) : View("RoomView"),
+RoomView::RoomView(Common::Path panelImageRes, Common::Path panelPaletteRes, Flags flags) : View("RoomView"),
   _panelImageRes(panelImageRes),
-  _panelPaletteRes(panelPaletteRes)  {
+  _panelPaletteRes(panelPaletteRes),
+  _flags(flags) {
 
   if (!_panelImageRes.empty()) {
     Common::ScopedPtr<Common::SeekableReadStream> imgStream(g_engine->getResourceManager().loadResource(_panelImageRes));
-    if (!g_engine->getResourceManager().loadPlainImageResource(imgStream.get(), _panelSurf)) {
-      warning("unable to load image resource");
+    if (_flags & Flags::IconPanelImage) {
+      if (!g_engine->getResourceManager().loadIconResource(imgStream.get(), _panelSurf)) {
+        warning("unable to load image resource");
+      }
+    }
+    else {
+      if (!g_engine->getResourceManager().loadPlainImageResource(imgStream.get(), _panelSurf)) {
+        warning("unable to load image resource");
+      }
     }
     _panelPt.y = g_engine->getScreen()->getBounds().height() - _panelSurf.h;
   }

@@ -30,15 +30,22 @@
 namespace Lukas {
 
 class RoomView : public View {
+
+public:
+	enum Flags {
+		None = 0,
+		IconPanelImage = 1,
+	};
 	
 private:
 	Common::Path _panelImageRes;
 	Common::Path _panelPaletteRes;
 	Graphics::Surface _panelSurf;
   Common::Point _panelPt;
+	Flags _flags;
 
 public:
-	RoomView(Common::Path panelImageRes, Common::Path panelPaletteRes);
+	RoomView(Common::Path panelImageRes, Common::Path panelPaletteRes, Flags flags = Flags::None);
 	virtual ~RoomView() {}
 
 	bool msgFocus(const FocusMessage &msg) override;
