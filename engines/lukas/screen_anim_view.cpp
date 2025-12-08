@@ -81,16 +81,20 @@ bool ScreenAnimView::tick() {
       break;
     }
     case Phase::Anim: {
-      if (_nextFrame < _frameCount) {
-        auto framePath = _frameContainerRes.append(Common::String::format("/%d", _firstFrame + _nextFrame));
-        Common::ScopedPtr<Common::SeekableReadStream> resourceStream(g_engine->getResourceManager().loadResource(framePath));
-        g_engine->getResourceManager().loadDeltaImageResource(resourceStream.get(), _surf);
-        _nextFrame++;
-        redraw();
-      }
-      else {
-        _counter = 0;
-        _phase = Phase::PostAnim;
+      uint curTime = g_system->getMillis();
+      if (curTime >= _nextFrameMillis) {
+        if (_nextFrame < _frameCount) {
+          auto framePath = _frameContainerRes.append(Common::String::format("/%d", _firstFrame + _nextFrame));
+          Common::ScopedPtr<Common::SeekableReadStream> resourceStream(g_engine->getResourceManager().loadResource(framePath));
+          g_engine->getResourceManager().loadDeltaImageResource(resourceStream.get(), _surf);
+          _nextFrame++;
+          redraw();
+        }
+        else {
+          _counter = 0;
+          _phase = Phase::PostAnim;
+        }
+        _nextFrameMillis = curTime + (1000 / 20);
       }
       break;
     }

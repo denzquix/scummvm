@@ -52,6 +52,7 @@ private:
   uint _firstFrame;
   uint _frameCount;
   uint _nextFrame;
+	uint _nextFrameMillis = 0;
 	Flags _flags;
 	Phase _phase = Phase::PreAnim;
 	uint _counter = 0;
