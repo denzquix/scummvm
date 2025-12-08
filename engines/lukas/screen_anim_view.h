@@ -35,6 +35,15 @@ public:
 		None = 0,
 		PlainPalette = 1,
 	};
+
+	enum Phase {
+		Unset = 0,
+		PreAnim = 1,
+		Anim = 2,
+		PostAnim = 3,
+		FadeOut = 4,
+		Closed = 5,
+	};
 	
 private:
 	Common::Path _frameContainerRes;
@@ -44,6 +53,13 @@ private:
   uint _frameCount;
   uint _nextFrame;
 	Flags _flags;
+	Phase _phase = Phase::PreAnim;
+	uint _counter = 0;
+	uint _preAnimTicks = 3;
+	uint _postAnimTicks = 5;
+	uint _fadeOutTicks = 70;
+	PalettePatch _fadeColors;
+	void updatePalette(float fadeFactor);
 
 public:
 	ScreenAnimView(Common::Path frameContainer, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags = Flags::None);

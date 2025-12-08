@@ -37,28 +37,32 @@ ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, 
   _flags(flags) {
 
   _surf.create(g_engine->getScreen()->w, g_engine->getScreen()->h, Graphics::PixelFormat::createFormatCLUT8());
+
+  g_engine->getResourceManager().loadPalettePatch(paletteRes, _fadeColors, flags & Flags::PlainPalette);
+  updatePalette(1.0);
 }
 
 bool ScreenAnimView::msgFocus(const FocusMessage &msg) {
-  if (!_paletteRes.empty()) {
-    Common::ScopedPtr<Common::SeekableReadStream> palStream(g_engine->getResourceManager().loadResource(_paletteRes));
-    if (_flags & Flags::PlainPalette) {
-      if (!g_engine->getResourceManager().loadPlainPaletteResource(palStream.get())) {
-        warning("unable to load palette resource");
-      }
+  switch (_phase) {
+    case Phase::PreAnim:
+    case Phase::Anim:
+    case Phase::PostAnim: {
+      updatePalette(1.0);
+      break;
     }
-    else {
-      if (!g_engine->getResourceManager().loadDeltaPaletteResource(palStream.get())) {
-        warning("unable to load palette resource");
-      }
+    case Phase::FadeOut: {
+      updatePalette(1.0 - (_counter / (float)_fadeOutTicks));
+      break;
     }
   }
 	return true;
 }
 
 bool ScreenAnimView::msgKeypress(const KeypressMessage &msg) {
-	// Any keypress to close the view
-	close();
+  if (_phase == Phase::Anim) {
+    _phase = Phase::FadeOut;
+    _counter = 0;
+  }
 	return true;
 }
 
@@ -68,15 +72,56 @@ void ScreenAnimView::draw() {
 }
 
 bool ScreenAnimView::tick() {
-  if (_nextFrame < _frameCount) {
-    auto framePath = _frameContainerRes.append(Common::String::format("/%d", _firstFrame + _nextFrame));
-    warning(framePath.toString().c_str());
-    Common::ScopedPtr<Common::SeekableReadStream> resourceStream(g_engine->getResourceManager().loadResource(framePath));
-    g_engine->getResourceManager().loadDeltaImageResource(resourceStream.get(), _surf);
-    _nextFrame++;
-		redraw();
+  switch (_phase) {
+    case Phase::PreAnim: {
+      if (++_counter >= _preAnimTicks) {
+        _phase = Phase::Anim;
+        _counter = 0;
+      }
+      break;
+    }
+    case Phase::Anim: {
+      if (_nextFrame < _frameCount) {
+        auto framePath = _frameContainerRes.append(Common::String::format("/%d", _firstFrame + _nextFrame));
+        Common::ScopedPtr<Common::SeekableReadStream> resourceStream(g_engine->getResourceManager().loadResource(framePath));
+        g_engine->getResourceManager().loadDeltaImageResource(resourceStream.get(), _surf);
+        _nextFrame++;
+        redraw();
+      }
+      else {
+        _counter = 0;
+        _phase = Phase::PostAnim;
+      }
+      break;
+    }
+    case Phase::PostAnim: {
+      if (++_counter >= _postAnimTicks) {
+        _phase = Phase::FadeOut;
+        _counter = 0;
+      }
+      break;
+    }
+    case Phase::FadeOut: {
+      updatePalette(1.0 - (_counter / (float)_fadeOutTicks));
+      if (++_counter >= _fadeOutTicks) {
+        updatePalette(0.0);
+        _phase = Phase::Closed;
+        _counter = 0;
+        close();
+      }
+      break;
+    }
   }
 	return true;
+}
+
+void ScreenAnimView::updatePalette(float fadeFactor) {
+  byte palette[Graphics::PALETTE_SIZE];
+  g_system->getPaletteManager()->grabPalette(palette, 0, Graphics::PALETTE_COUNT);
+  for (uint i = 0; i < _fadeColors.paletteData.size(); i++) {
+    palette[_fadeColors.offset + i] = _fadeColors.paletteData[i] * fadeFactor;
+  }
+  g_system->getPaletteManager()->setPalette(palette, 0, Graphics::PALETTE_COUNT);
 }
 
 } // namespace Lukas
