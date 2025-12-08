@@ -147,6 +147,8 @@ public:
 	bool getRoomBackgroundResourcePath(int roomNumber, Common::Path &outPath);
 	bool getRoomDialoguesResourcePath(int roomNumber, Common::Path &outPath);
 	bool getRoomObjectsResourcePath(int roomNumber, Common::Path &outPath);
+	bool getRoomTileDataResourcePath(int roomNumber, Common::Path &outPath);
+	bool getRoomTileMapResourcePath(int roomNumber, Common::Path &outPath);
 
 	bool loadRoom(int roomNumber, Room& room);
 };

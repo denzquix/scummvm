@@ -57,7 +57,7 @@ bool RoomView::msgFocus(const FocusMessage &msg) {
       warning("unable to load palette resource");
     }
   }
-	return true;
+  return View::msgFocus(msg);
 }
 
 bool RoomView::msgKeypress(const KeypressMessage &msg) {
@@ -69,6 +69,7 @@ bool RoomView::msgKeypress(const KeypressMessage &msg) {
 void RoomView::draw() {
 	Graphics::ManagedSurface s = getSurface();
   s.blitFrom(_panelSurf, _panelPt);
+  View::draw();
 }
 
 bool RoomView::tick() {

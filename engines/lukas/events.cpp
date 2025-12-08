@@ -28,6 +28,7 @@
 #include "lukas/screen_anim_view.h"
 #include "lukas/special_screen_view.h"
 #include "lukas/room_view.h"
+#include "lukas/tile_scene.h"
 
 namespace Lukas {
 
@@ -67,7 +68,9 @@ void Events::runGame() {
 		for (uint16 i = 11; i <= 25; i++) {
 			g_engine->addInvIcon(Common::Path(Common::String::format("PANELS.DAT/%d", i)));
 		}
-		addView(new RoomView(Common::Path("PANELS.DAT/26"), Common::Path("PANELS.DAT/0"), RoomView::Flags::IconPanelImage));
+		auto roomView = new RoomView(Common::Path("PANELS.DAT/26"), Common::Path("PANELS.DAT/0"), RoomView::Flags::IconPanelImage);
+		new TileScene("scene", roomView, 1);
+		addView(roomView);
 		addView(new SpecialScreenView(Common::Path("ADLOGO.DAT/3"), Common::Path("ADLOGO.DAT/4")));
 		addView(new SpecialScreenView(Common::Path("ADLOGO.DAT/1"), Common::Path("ADLOGO.DAT/2")));
 	}

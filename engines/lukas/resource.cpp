@@ -953,5 +953,73 @@ bool ResourceManager::loadPalettePatch(const Common::Path &resourcePath, Palette
   }
 }
 
+bool ResourceManager::loadTilesResource(Common::SeekableReadStream *resourceStream, PalettePatch &outPalette, Graphics::Surface &outSurface) const {
+  if (!resourceStream) {
+    return false;
+  }
+  uint16 paletteCount = resourceStream->readUint16LE();
+  if (paletteCount > 256) {
+    warning("Invalid tiles resource: Too many colors for 8-bit palette (%d)", paletteCount);
+    return false;
+  }
+  uint16 tileCount = resourceStream->readUint16LE();
+  if (tileCount >= 1024) {
+    warning("Invalid tiles resource: Too many tiles (%d)", tileCount);
+    return false;
+  }
+  uint32 paletteOffset = resourceStream->readUint32LE();
+  uint32 tilesOffset = resourceStream->readUint32LE();
+  outPalette.offset = 0;
+  outPalette.paletteData.resize(paletteCount * 3);
+  if (!resourceStream->seek(paletteOffset, SEEK_SET)) {
+    warning("Invalid tiles resource: Failed to find palette data");
+    outPalette.paletteData.clear();
+    return false;
+  }
+  if (resourceStream->read(outPalette.paletteData.data(), paletteCount * 3) != paletteCount * 3U) {
+    warning("Invalid tiles resource: Failed to read palette data");
+    outPalette.paletteData.clear();
+    return false;
+  }
+  for (uint i = 0; i < paletteCount * 3U; i++) {
+    outPalette.paletteData[i] = PALETTE_6BIT_TO_8BIT(outPalette.paletteData[i]);
+  }
+  if (!resourceStream->seek(tilesOffset, SEEK_SET)) {
+    warning("Invalid tiles resource: Failed to find tile data");
+    outPalette.paletteData.clear();
+    return false;
+  }
+  outSurface.create(16, 16 * tileCount, Graphics::PixelFormat::createFormatCLUT8());
+  if (resourceStream->read(outSurface.getPixels(), 16 * 16 * tileCount) != 16U * 16 * tileCount) {
+    warning("Invalid tile resource: Failed to read tile data");
+    outPalette.paletteData.clear();
+    outSurface.free();
+    return false;
+  }
+  return true;
+}
+
+bool ResourceManager::loadTileMapResource(Common::SeekableReadStream *resourceStream, TileMap &outTileMap) const {
+  if (!resourceStream) {
+    outTileMap.data.clear();
+    outTileMap.width = outTileMap.height = 0;
+    return false;
+  }
+  outTileMap.width = resourceStream->readUint16LE();
+  outTileMap.height = resourceStream->readUint16LE();
+  uint dataSize = outTileMap.width * outTileMap.height;
+  if (dataSize == 0 || dataSize > 4192) {
+    outTileMap.data.clear();
+    outTileMap.width = outTileMap.height = 0;
+    return false;
+  }
+  outTileMap.data.resize(dataSize);
+  if (resourceStream->read(outTileMap.data.data(), dataSize) != dataSize) {
+    outTileMap.data.clear();
+    outTileMap.width = outTileMap.height = 0;
+    return false;
+  }
+  return true;
+}
 
 } // End of namespace Lukas

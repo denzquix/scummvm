@@ -33,6 +33,7 @@
 #include "common/scummsys.h"
 #include "common/str.h"
 
+#include "graphics/palette.h"
 #include "graphics/surface.h"
 
 namespace Lukas {
@@ -42,6 +43,12 @@ namespace Lukas {
 struct PalettePatch {
 	byte offset;
 	Common::Array<byte> paletteData;
+};
+
+struct TileMap {
+	uint width;
+	uint height;
+	Common::Array<byte> data;
 };
 
 /**
@@ -95,6 +102,10 @@ public:
 	bool loadIconResource(Common::SeekableReadStream *resourceStream, Graphics::Surface &surface) const;
 
 	bool loadCursorResource(Common::SeekableReadStream *resourceStream, uint32 keyColor = 0) const;
+
+	bool loadTilesResource(Common::SeekableReadStream *resourceStream, PalettePatch &outPalette, Graphics::Surface &outSurface) const;
+
+	bool loadTileMapResource(Common::SeekableReadStream *resourceStream, TileMap &outTileMap) const;
 
 private:
 	Common::FSNode _resourceRoot;

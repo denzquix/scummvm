@@ -162,4 +162,24 @@ bool LukasEngine::loadRoom(int roomNumber, Room& room) {
 	return true;
 }
 
+bool LukasEngine::getRoomTileDataResourcePath(int roomNumber, Common::Path &outPath) {
+	if (Common::String(_gameDescription->desc.gameId).equals("bstage")) {
+		outPath = Common::String::format("LEVL%02d.DAT/3", roomNumber);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+bool LukasEngine::getRoomTileMapResourcePath(int roomNumber, Common::Path &outPath) {
+	if (Common::String(_gameDescription->desc.gameId).equals("bstage")) {
+		outPath = Common::String::format("LEVL%02d.DAT/4", roomNumber);
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 } // End of namespace Lukas

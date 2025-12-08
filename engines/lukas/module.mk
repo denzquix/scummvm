@@ -12,6 +12,7 @@ MODULE_OBJS = \
 	metaengine.o \
 	screen_anim_view.o \
 	special_screen_view.o \
+	tile_scene.o \
 	view.o \
 	view1.o
 
