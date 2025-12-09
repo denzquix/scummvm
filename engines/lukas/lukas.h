@@ -51,6 +51,7 @@ private:
 	Common::Array<Graphics::Surface> _invIcons;
 	Common::Array<Common::Array<DialogueLine>> _globalDialogue;
 	Common::Array<Common::Array<DialogueLine>> _globalDialogue2;
+	Common::Array<uint> _carriedInventory;
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -127,6 +128,8 @@ public:
 		Common::SharedPtr<Common::SeekableReadStream> resStream(_resourceManager.loadResource(resPath));
 		_invIcons.resize(_invIcons.size() + 1);
 		if (_resourceManager.loadIconResource(resStream.get(), _invIcons.back())) {
+			// TODO: remove this testing action (auto add inventory items)
+			_carriedInventory.push_back(_invIcons.size() - 1);
 			return true;
 		}
 		else {
@@ -151,6 +154,8 @@ public:
 	bool getRoomTileMapResourcePath(int roomNumber, Common::Path &outPath);
 
 	bool loadRoom(int roomNumber, Room& room);
+
+	Common::Array<uint>& getCarriedInventory() { return _carriedInventory; }
 };
 
 extern LukasEngine *g_engine;

@@ -5,6 +5,7 @@ MODULE_OBJS = \
 	console.o \
 	dialogue.o \
 	events.o \
+	inventory_grid.o \
 	resource.o \
 	room.o \
 	room_view.o \
