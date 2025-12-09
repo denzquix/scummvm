@@ -107,6 +107,8 @@ public:
 
 	bool loadTileMapResource(Common::SeekableReadStream *resourceStream, TileMap &outTileMap) const;
 
+	bool playSoundResource(const Common::Path &resourcePath) const;
+
 private:
 	Common::FSNode _resourceRoot;
 

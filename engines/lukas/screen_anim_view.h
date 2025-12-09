@@ -48,6 +48,7 @@ public:
 private:
 	Common::Path _frameContainerRes;
 	Common::Path _paletteRes;
+	Common::Path _soundRes;
 	Graphics::Surface _surf;
   uint _firstFrame;
   uint _frameCount;
@@ -63,6 +64,7 @@ private:
 	void updatePalette(float fadeFactor);
 
 public:
+	ScreenAnimView(Common::Path frameContainer, uint firstFrame, uint frameCount, Common::Path paletteRes, Common::Path soundRes, Flags flags = Flags::None);
 	ScreenAnimView(Common::Path frameContainer, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags = Flags::None);
 	virtual ~ScreenAnimView() {}
 

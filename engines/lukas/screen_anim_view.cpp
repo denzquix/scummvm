@@ -28,9 +28,10 @@
 
 namespace Lukas {
 
-ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags) : View("ScreenAnimView"),
+ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, uint frameCount, Common::Path paletteRes, Common::Path soundRes, Flags flags) : View("ScreenAnimView"),
   _frameContainerRes(frameContainerRes),
   _paletteRes(paletteRes),
+  _soundRes(soundRes),
   _firstFrame(firstFrame),
   _frameCount(frameCount),
   _nextFrame(0),
@@ -40,6 +41,10 @@ ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, 
 
   g_engine->getResourceManager().loadPalettePatch(paletteRes, _fadeColors, flags & Flags::PlainPalette);
   updatePalette(1.0);
+}
+
+ScreenAnimView::ScreenAnimView(Common::Path frameContainerRes, uint firstFrame, uint frameCount, Common::Path paletteRes, Flags flags)
+  : ScreenAnimView(frameContainerRes, firstFrame, frameCount, paletteRes, Common::Path(), flags) {
 }
 
 bool ScreenAnimView::msgFocus(const FocusMessage &msg) {
@@ -77,6 +82,9 @@ bool ScreenAnimView::tick() {
       if (++_counter >= _preAnimTicks) {
         _phase = Phase::Anim;
         _counter = 0;
+        if (!_soundRes.empty()) {
+          g_engine->getResourceManager().playSoundResource(_soundRes);
+        }
       }
       break;
     }

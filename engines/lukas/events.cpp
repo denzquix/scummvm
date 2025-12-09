@@ -117,7 +117,7 @@ void Events::runGame() {
 		addView(roomView);
 		addView(new SpecialScreenView(Common::Path("TMENUE.DAT/0"), Common::Path("TMENUE.DAT/1"), SpecialScreenView::Flags::PlainPalette));
 		addView(new SpecialScreenView(Common::Path("FDANIM.DAT/0"), Common::Path("FDANIM.DAT/1"), SpecialScreenView::Flags::PlainPalette));
-		addView(new ScreenAnimView(Common::Path("TKANIM.DAT"), 0, 63, Common::Path("TKANIM.DAT/63"), ScreenAnimView::Flags::PlainPalette));
+		addView(new ScreenAnimView(Common::Path("TKANIM.DAT"), 0, 63, Common::Path("TKANIM.DAT/63"), Common::Path("TKANIM.DAT/65"), ScreenAnimView::Flags::PlainPalette));
 	}
 	else {
 		addView("View1");

@@ -38,6 +38,10 @@
 #include "graphics/paletteman.h"
 #include "graphics/surface.h"
 
+#include "audio/audiostream.h"
+#include "audio/mixer.h"
+#include "audio/decoders/raw.h"
+
 namespace Lukas {
 
 ResourceManager::ResourceManager() {
@@ -157,8 +161,8 @@ bool ResourceManager::ensureResourceRoot(const Common::Path &gameDataPath) {
 }
 
 bool ResourceManager::decompressRibInPlace(byte *data, uint32 compressedSize, uint32 fullSize) const {
-  if (compressedSize >= fullSize) {
-    warning("RIB decompression failed: final size must be greater than compressed size");
+  if (compressedSize > fullSize) {
+    warning("RIB decompression failed: final size (%d) cannot be less than compressed size (%d)", fullSize, compressedSize);
     return false;
   }
   int32 inIdx = compressedSize - 1;
@@ -1019,6 +1023,26 @@ bool ResourceManager::loadTileMapResource(Common::SeekableReadStream *resourceSt
     outTileMap.width = outTileMap.height = 0;
     return false;
   }
+  return true;
+}
+
+bool ResourceManager::playSoundResource(const Common::Path &resourcePath) const {
+  auto streamPtr = Common::ScopedPtr<Common::SeekableReadStream>(loadResource(resourcePath));
+  if (!streamPtr) {
+    warning("Failed to open resource %s", resourcePath.toString().c_str());
+    return false;
+  }
+  if (streamPtr->readUint32BE() != MKTAG('S', 'M', '8', '\0')) {
+    warning("Sound resource missing signature bytes");
+    return false;    
+  }
+  
+  if (!streamPtr->seek(10) || streamPtr->err()) {
+    return false;
+  }
+  auto audio = Audio::makeRawStream(streamPtr.release(), 8000, Audio::FLAG_UNSIGNED, DisposeAfterUse::YES);
+  Audio::SoundHandle handle;
+  g_system->getMixer()->playStream(Audio::Mixer::kSFXSoundType, &handle, audio, -1, Audio::Mixer::kMaxChannelVolume);
   return true;
 }
 

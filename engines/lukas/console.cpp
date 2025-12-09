@@ -36,6 +36,7 @@ Console::Console(LukasEngine *engine) : GUI::Debugger() {
 	registerCmd("roomobjs", WRAP_METHOD(Console, Cmd_roomobjs));
 	registerCmd("dlgres",   WRAP_METHOD(Console, Cmd_dlgres));
 	registerCmd("findres",  WRAP_METHOD(Console, Cmd_findres));
+	registerCmd("sndres",   WRAP_METHOD(Console, Cmd_sndres));
 }
 
 Console::~Console() {
@@ -272,6 +273,21 @@ bool Console::Cmd_findres(int argc, const char **argv) {
 	}
 	else {
 		debugPrintf("Resource path: %s\n", result.toString().c_str());
+	}
+	return true;
+}
+
+bool Console::Cmd_sndres(int argc, const char **argv) {
+	if (argc != 2) {
+		debugPrintf("Usage: sndres <res>\n");
+		return true;
+	}
+	auto resman = _engine->getResourceManager();
+	if (resman.playSoundResource(Common::Path(argv[1]))) {
+		debugPrintf("Sound resource %s played successfully\n", argv[1]);
+	}
+	else {
+		debugPrintf("Sound resource %s failed to play\n", argv[1]);
 	}
 	return true;
 }
