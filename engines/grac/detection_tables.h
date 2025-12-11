@@ -32,6 +32,9 @@ const PlainGameDescriptor gracGames[] = {
 	{ "geoquest2", "Geo's Quest II: In Search of Queen Lorraine" },
 	{ "geoquest3", "Geo's Quest III: Gateway to Nowhere" },
 	{ "geoquest4", "Geo's Quest III Part 2: There Be Cows" },
+	// Note: There is no Chapter I
+	{ "alcandria2", "Lord of Alcandria: Chapter II"},
+	{ "alcandria3", "Lord of Alcandria: Chapter III"},
 	{ 0, 0 }
 };
 
@@ -122,6 +125,33 @@ const ADGameDescription gameDescriptions[] = {
 		nullptr,
 		AD_ENTRY1s("GQ4.GRAC2", "e5dbf993a8ac31acee8bdebcdf1769cb", 7424),
 		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"alcandria2",
+		nullptr,
+		AD_ENTRY1s("Krilok(t).GRAC2", "f90517c2e99c8c5b1713b6d5a10c29f7", 6500),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"alcandria3",
+		nullptr,
+		AD_ENTRY1s("Krilok(x).GRAC2", "a3e6a8fefdb35af7965969fb7e2e3c47", 11820),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"alcandria3",
+		nullptr,
+		AD_ENTRY1s("krilok(x).grac2", "53be90f5ff7fd56cf429d5fa8f674135", 12140),
+		Common::ES_ESP,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
