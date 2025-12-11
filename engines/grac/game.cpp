@@ -517,15 +517,13 @@ Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedS
     packed[packed_i] = FROM_BE_32(packed[packed_i]);
   }
   byte* unpacked = new byte[unpackedLength];
-  Grac2Decompressor* decomp = new Grac2Decompressor(packed, packed + packedLength, unpacked, unpacked + unpackedLength);
-  if (!decomp->readAll()) {
+  Grac2Decompressor decomp(packed, packed + packedLength, unpacked, unpacked + unpackedLength);
+  if (!decomp.readAll()) {
     warning("Unable to unpack: Decompression stream error");
-    delete decomp;
     delete[] packed;
     delete[] unpacked;
     return nullptr;
   }
-  delete decomp;
   delete[] packed;
   return new Common::MemoryReadStream(unpacked, unpackedLength, DisposeAfterUse::YES);
 }
