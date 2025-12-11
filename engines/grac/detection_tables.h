@@ -25,7 +25,7 @@ const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
 	{ "lethalformula", "Lethal Formula" },
 	{ "twom", "The World of Magic" },
-	{ "epsilon9", "Epsilon 9" },
+	{ "epsilon9", "Epsilon 9: Revenge of the Stingons" },
 	{ "entity", "Entity" },
 	{ 0, 0 }
 };
