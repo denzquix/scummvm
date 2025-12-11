@@ -22,6 +22,7 @@
 #include "grac/grac.h"
 #include "grac/detection.h"
 #include "grac/console.h"
+#include "grac/game.h"
 #include "common/scummsys.h"
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
@@ -40,6 +41,7 @@ GracEngine::GracEngine(OSystem *syst, const ADGameDescription *gameDesc) : Engin
 }
 
 GracEngine::~GracEngine() {
+	delete _game;
 }
 
 uint32 GracEngine::getFeatures() const {
@@ -56,6 +58,8 @@ Common::Error GracEngine::run() {
 
 	// Set the engine's debugger console
 	setDebugger(new Console());
+
+	_game = new GracGame(ConfMan.getPath("path"));
 
 	runGame();
 

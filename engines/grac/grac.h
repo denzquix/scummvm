@@ -36,6 +36,7 @@
 
 #include "grac/detection.h"
 #include "grac/events.h"
+#include "grac/game.h"
 
 namespace Grac {
 
@@ -45,6 +46,7 @@ class GracEngine : public Engine, public Events {
 private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
+	GracGame *_game;
 protected:
 	// Engine APIs
 	Common::Error run() override;

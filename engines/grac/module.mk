@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	grac.o \
 	console.o \
 	events.o \
+	game.o \
 	messages.o \
 	metaengine.o \
 	view.o \
