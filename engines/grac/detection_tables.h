@@ -25,6 +25,7 @@ const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
 	{ "lethalformula", "Lethal Formula" },
 	{ "twom", "The World of Magic" },
+	{ "epsilon9", "Epsilon 9" },
 	{ 0, 0 }
 };
 
@@ -54,6 +55,15 @@ const ADGameDescription gameDescriptions[] = {
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_DEMO | ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"epsilon9",
+		nullptr,
+		AD_ENTRY1s("yeno.grac2", "379c8d9216dea09edfc7fa883615cc4d", 7572),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
 	},
 
