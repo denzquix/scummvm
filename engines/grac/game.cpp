@@ -107,7 +107,7 @@ GracGame::GracGame(const Common::Path& path) {
           || filePath.matchString("grac *.character")
           || filePath.matchString("grac *.closeup")
           || filePath.matchString("grac *.object")
-          || filePath.matchString("grac *.picture")
+          || filePath.matchString("grac *.anim")
           || filePath.matchString("grac *.room")
           || filePath.matchString("grac *.sample")
         ) {
