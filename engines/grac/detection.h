@@ -34,6 +34,21 @@ enum GracDebugChannels {
 	kDebugScript,
 };
 
+enum GracFileTypes {
+	GRACFILE_MAIN = 1,
+	GRACFILE_INV,
+	GRACFILE_CONT,
+	GRACFILE_ROOM,
+	GRACFILE_CHARACTER,
+	GRACFILE_OBJECT,
+	GRACFILE_ANIM,
+	GRACFILE_CLOSEUP,
+	GRACFILE_SAMPLE,
+	
+	GRACFILE_GRAC2 = 1 << 6,
+	GRACFILE_TYPEMASK = (1 << 6)-1,
+};
+
 extern const PlainGameDescriptor gracGames[];
 
 extern const ADGameDescription gameDescriptions[];
