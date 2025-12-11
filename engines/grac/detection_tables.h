@@ -39,6 +39,7 @@ const PlainGameDescriptor gracGames[] = {
 	// Note: There is no Chapter I
 	{ "alcandria2", "Lord of Alcandria: Chapter II"},
 	{ "alcandria3", "Lord of Alcandria: Chapter III"},
+	{ "samnmaxxmas", "Sam & Max" },
 	{ 0, 0 }
 };
 
@@ -279,6 +280,18 @@ const ADGameDescription gameDescriptions[] = {
       AD_LISTEND
     },
 		Common::ES_ESP,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"samnmaxxmas",
+		"Fan Game",
+		{
+      { "Sam&Max.grac2", GRACFILE_GRAC2 | GRACFILE_MAIN, "7ea708d060eee1cdad76e73869df167e", 812 },
+      AD_LISTEND
+    },
+		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
