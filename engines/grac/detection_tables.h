@@ -24,6 +24,7 @@ namespace Grac {
 const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
 	{ "lethalformula", "Lethal Formula" },
+	{ "twom", "The World of Magic" },
 	{ 0, 0 }
 };
 
@@ -44,6 +45,15 @@ const ADGameDescription gameDescriptions[] = {
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"twom",
+		"Demo",
+		AD_ENTRY1s("The_World_Of_Magic.grac2", "7f6c22e988de80bb2a41fd40f784b98b", 12860),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_DEMO | ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
 	},
 
