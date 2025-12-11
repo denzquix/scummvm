@@ -26,6 +26,7 @@ const PlainGameDescriptor gracGames[] = {
 	{ "lethalformula", "Lethal Formula" },
 	{ "twom", "The World of Magic" },
 	{ "epsilon9", "Epsilon 9" },
+	{ "entity", "Entity" },
 	{ 0, 0 }
 };
 
@@ -61,6 +62,15 @@ const ADGameDescription gameDescriptions[] = {
 		"epsilon9",
 		nullptr,
 		AD_ENTRY1s("yeno.grac2", "379c8d9216dea09edfc7fa883615cc4d", 7572),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"entity",
+		nullptr,
+		AD_ENTRY1s("Game.GRAC2", "551afeab57a40815a6bba48203fbb194", 5236),
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
