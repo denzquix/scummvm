@@ -25,6 +25,7 @@ const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
 	{ "lethalformula", "Lethal Formula" },
 	{ "twom", "The World of Magic" },
+	{ "twom2", "The World of Magic II: Ghelae and the Death-Sword" },
 	{ "epsilon9", "Epsilon 9: Revenge of the Stingons" },
 	{ "entity", "Entity" },
 	{ "experiment", "The Experiment" },
@@ -59,11 +60,29 @@ const ADGameDescription gameDescriptions[] = {
 	},
 	{
 		"twom",
+		nullptr,
+		AD_ENTRY1s("The_World_Of_Magic", "0fedbd44ea5f1967ba503de1be5512a8", 14636),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"twom",
 		"Demo",
 		AD_ENTRY1s("The_World_Of_Magic.grac2", "7f6c22e988de80bb2a41fd40f784b98b", 12860),
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_DEMO | ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"twom2",
+		nullptr,
+		AD_ENTRY1s("TWOM2.GRAC2", "da4f0ca53c5ab3e29ac4322f90601c13", 10376),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
 	},
 	{
