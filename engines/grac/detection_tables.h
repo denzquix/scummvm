@@ -27,6 +27,7 @@ const PlainGameDescriptor gracGames[] = {
 	{ "twom", "The World of Magic" },
 	{ "epsilon9", "Epsilon 9: Revenge of the Stingons" },
 	{ "entity", "Entity" },
+	{ "experiment", "The Experiment" },
 	{ 0, 0 }
 };
 
@@ -71,6 +72,15 @@ const ADGameDescription gameDescriptions[] = {
 		"entity",
 		nullptr,
 		AD_ENTRY1s("Game.GRAC2", "551afeab57a40815a6bba48203fbb194", 5236),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"experiment",
+		nullptr,
+		AD_ENTRY1s("Experiment.GRAC2", "10874b1c116de02ff3ed23f04811603a", 8024),
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
