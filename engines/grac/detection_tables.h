@@ -28,6 +28,10 @@ const PlainGameDescriptor gracGames[] = {
 	{ "epsilon9", "Epsilon 9: Revenge of the Stingons" },
 	{ "entity", "Entity" },
 	{ "experiment", "The Experiment" },
+	{ "geoquest1", "Geo's Quest" },
+	{ "geoquest2", "Geo's Quest II: In Search of Queen Lorraine" },
+	{ "geoquest3", "Geo's Quest III: Gateway to Nowhere" },
+	{ "geoquest4", "Geo's Quest III Part 2: There Be Cows" },
 	{ 0, 0 }
 };
 
@@ -81,6 +85,42 @@ const ADGameDescription gameDescriptions[] = {
 		"experiment",
 		nullptr,
 		AD_ENTRY1s("Experiment.GRAC2", "10874b1c116de02ff3ed23f04811603a", 8024),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"geoquest1",
+		nullptr,
+		AD_ENTRY1s("GQ1", "b8f5aa2f9f6468667a65df339fe7da52", 1816),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"geoquest2",
+		nullptr,
+		AD_ENTRY1s("GQ2.GRAC2", "a81a1cbe9f457dfccf71ad6fd859fcd4", 5688),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"geoquest3",
+		nullptr,
+		AD_ENTRY1s("GQ3.GRAC2", "bbff4569cd9c54ea1c04ecc448124219", 14944),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"geoquest4",
+		nullptr,
+		AD_ENTRY1s("GQ4.GRAC2", "e5dbf993a8ac31acee8bdebcdf1769cb", 7424),
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
