@@ -23,6 +23,7 @@ namespace Grac {
 
 const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
+	{ "lethalformula", "Lethal Formula" },
 	{ 0, 0 }
 };
 
@@ -31,6 +32,15 @@ const ADGameDescription gameDescriptions[] = {
 		"morristhemaggot",
 		nullptr,
 		AD_ENTRY1s("morristhemaggot.grac2", "eae0cd8e62fa33c40082cab1a7623e50", 3148),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"lethalformula",
+		"GR.A.C. 2 version",
+		AD_ENTRY1s("Lethal_formula", "96c66b8c2392151a6e9cd57096f121b4", 5556),
 		Common::EN_ANY,
 		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
