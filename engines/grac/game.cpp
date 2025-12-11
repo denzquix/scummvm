@@ -78,7 +78,6 @@ bool GracGame::ScriptBank::read(Common::SeekableReadStream* fromStream, uint ent
 }
 
 GracGame::GracGame(const Common::Path& path) {
-  g_game = this;
 
   Common::SeekableReadStream* mainStream = nullptr;
 
@@ -264,6 +263,7 @@ GracGame::GracGame(const Common::Path& path) {
 
   delete mainStream;
 
+  g_game = this;
 }
 
 class Grac2Decompressor {
