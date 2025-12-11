@@ -24,6 +24,9 @@ namespace Grac {
 const PlainGameDescriptor gracGames[] = {
 	{ "morristhemaggot", "Morris the Maggot" },
 	{ "lethalformula", "Lethal Formula" },
+	{ "dodgygame", "The Dodgy Game" },
+	{ "gractutorial", "GR.A.C. Tutorial Game" },
+	{ "gracuserdisk", "GR.A.C. User Disk Game" },
 	{ "twom", "The World of Magic" },
 	{ "twom2", "The World of Magic II: Ghelae and the Death-Sword" },
 	{ "epsilon9", "Epsilon 9: Revenge of the Stingons" },
@@ -54,9 +57,57 @@ const ADGameDescription gameDescriptions[] = {
 	},
 	{
 		"lethalformula",
+		"GR.A.C. 1 version",
+		{
+      { "Lethal_formula", GRACFILE_MAIN, "690effb9d73f9e8b8c1ba090f7a06120", 5480 },
+      AD_LISTEND
+    },
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"lethalformula",
 		"GR.A.C. 2 version",
 		{
       { "Lethal_formula", GRACFILE_GRAC2 | GRACFILE_MAIN, "96c66b8c2392151a6e9cd57096f121b4", 5556 },
+      AD_LISTEND
+    },
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"dodgygame",
+		nullptr,
+		{
+			{ "Dodgy_Game", GRACFILE_MAIN, "299932946604a38252aa0786f3498ea4", 2416 },
+      AD_LISTEND
+    },
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"gractutorial",
+		nullptr,
+		{
+			{ "tutorial.grac", GRACFILE_MAIN, "7dd7ac6672ea889ba75ff1a854cff1de", 320 },
+      AD_LISTEND
+    },
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE,
+		GUIO1(GUIO_NONE)
+	},
+	{
+		"gracuserdisk",
+		nullptr,
+		{
+			{ "tutorial.grac", GRACFILE_MAIN, "722f4b769f27466831b5acaffd19dcc7", 640 },
       AD_LISTEND
     },
 		Common::EN_ANY,
