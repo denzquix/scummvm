@@ -94,6 +94,15 @@ const ADGameDescription gameDescriptions[] = {
 		GUIO1(GUIO_NONE)
 	},
 	{
+		"experiment",
+		"Demo",
+		AD_ENTRY1s("Experiment_Demo", "83ec2b85c0c14dd83e2a538ffbc221bc", 8032),
+		Common::EN_ANY,
+		Common::kPlatformAmiga,
+		ADGF_UNSTABLE | ADGF_DEMO,
+		GUIO1(GUIO_NONE)
+	},
+	{
 		"geoquest1",
 		nullptr,
 		AD_ENTRY1s("GQ1", "b8f5aa2f9f6468667a65df339fe7da52", 1816),
