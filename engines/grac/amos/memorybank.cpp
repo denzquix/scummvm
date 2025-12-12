@@ -20,6 +20,11 @@
  */
 
 #include "common/endian.h"
+#include "common/stream.h"
+#include "common/memstream.h"
+#include "common/ptr.h"
+#include "graphics/surface.h"
+#include "graphics/palette.h"
 #include "grac/amos/memorybank.h"
 
 namespace Amos {
@@ -120,6 +125,181 @@ MemoryBank::Type MemoryBank::determineBankType(const char bankName[8]) {
       return MEMBANK_UNKNOWN;
     }
   }
+}
+
+void amigaColor(uint16 amigaColor, byte& red, byte& green, byte& blue) {
+  red =   ((amigaColor >> 8) & 0x0f) * 0x11;
+  green = ((amigaColor >> 4) & 0x0f) * 0x11;
+  blue =  ((amigaColor     ) & 0x0f) * 0x11;
+}
+ 
+bool MemoryBank::toPicture(Graphics::Surface& surf, Graphics::Palette& pal) {
+  if (_bankType != MEMBANK_PICTURE) {
+    return false;
+  }
+  Common::ScopedPtr<Common::MemoryReadStream> ptr(new Common::MemoryReadStream(_data, _bankLength));
+  // read screen header
+  if (ptr->readUint32BE() != SCREEN_HEADER_MAGIC) {
+    warning("screen header signature not found");
+    return false;
+  }
+  uint16 screenWidth = ptr->readUint16BE();
+  uint16 screenHeight = ptr->readUint16BE();
+  uint16 hardwareX = ptr->readUint16BE();
+  uint16 hardwareY = ptr->readUint16BE();
+  uint16 hardwareScreenWidth = ptr->readUint16BE();
+  uint16 hardwareScreenHeight = ptr->readUint16BE();
+  uint16 hardwareXOffset = ptr->readUint16BE();
+  uint16 hardwareYOffset = ptr->readUint16BE();
+  uint16 bplcon0 = ptr->readUint16BE();
+  uint16 colors = ptr->readUint16BE();
+  if (colors > 32) {
+    warning("too many colors: %d", colors);
+    return false;
+  }
+  uint16 screenBitplanes = ptr->readUint16BE();
+  pal.resize(colors, false);
+  for (uint i = 0; i < colors; i++) {
+    byte r,g,b;
+    amigaColor(ptr->readUint16BE(), r, g, b);
+    pal.set(i, r, g, b);
+  }
+  if (!ptr->skip((32 - colors) * 2)) {
+    warning("failed to skip");
+    pal.clear();
+    return false;
+  }
+  // read picture header
+  int64 picHeaderOffset = ptr->pos();
+  if (picHeaderOffset < 0 || picHeaderOffset >= _bankLength) {
+    warning("invalid picHeaderOffset: %d", picHeaderOffset);
+    pal.clear();
+    return false;
+  }
+  if (ptr->readUint32BE() != PICTURE_HEADER_MAGIC) {
+    warning("picture header signature not found");
+    pal.clear();
+    return false;
+  }
+  uint16 xOffsetBytes = ptr->readUint16BE();
+  uint16 yOffsetLines = ptr->readUint16BE();
+  uint16 picWidthBytes = ptr->readUint16BE();
+  uint16 picHeightLumps = ptr->readUint16BE();
+  uint16 linesPerLump = ptr->readUint16BE();
+  uint16 picBitplanes = ptr->readUint16BE();
+  if (picBitplanes < 1 || picBitplanes > 6) {
+    warning("invalid number of bitplanes: %d", picBitplanes);
+    pal.clear();
+    return false;
+  }
+  int64 rle1Offset = picHeaderOffset + ptr->readUint32BE();
+  int64 rle2Offset = picHeaderOffset + ptr->readUint32BE();
+  // We have already ensured that picHeaderOffset's value fits in a
+  // uint32, so rle1Offset and rle2Offset (as the sum of two uint32s
+  // in an int64) cannot have overflowed, so cannot be negative
+  if (rle1Offset >= _bankLength || rle2Offset >= _bankLength) {
+    warning("invalid offset");
+    pal.clear();
+    return false;
+  }
+  const byte* const rle1Start = _data + rle1Offset;
+  const byte* const rle2Start = _data + rle2Offset;
+  int64 packedOffset = ptr->pos();
+  if (packedOffset < 0 || packedOffset >= _bankLength) {
+    warning("invalid offset");
+    pal.clear();
+    return false;
+  }
+  const byte* const packedStart = _data + packedOffset;
+  const byte* const dataEnd = _data + _bankLength;
+  if (packedStart >= dataEnd || rle1Start >= dataEnd || rle2Start >= dataEnd) {
+    warning("data underrun");
+    pal.clear();
+    return false;
+  }
+  uint32 height = picHeightLumps * linesPerLump;
+  uint32 width = picWidthBytes * 8;
+  if (width < 1 || height < 1 || width >= 2048 || height >= 2048) {
+    warning("invalid dimensions: %dx%d", width, height);
+    pal.clear();
+    return false;
+  }
+  surf.create(width, height, Graphics::PixelFormat::createFormatCLUT8());
+  byte *pixels = (byte*)surf.getPixels();
+  const byte* packed = packedStart;
+  const byte* rle1 = rle1Start;
+  const byte* rle2 = rle2Start;
+  byte rle1BitBuf = *rle1++, rle1BitCount = 8;
+  byte rle2BitBuf = *rle2++, rle2BitCount = 8;
+  byte picByte = *packed++;
+  if (rle2BitBuf & 0x80) {
+    if (rle1 >= dataEnd) {
+      warning("ran out of data reading rle1");
+      pal.clear();
+      surf.free();
+      return false;
+    }
+    rle1BitBuf = *rle1++;
+  }
+  rle2BitBuf <<= 1;
+  rle2BitCount--;
+  byte prevRle1BitBuf = rle1BitBuf;
+  for (uint bitplane_i = 0; bitplane_i < picBitplanes; bitplane_i++) {
+    byte planed_bit = 1 << bitplane_i;
+    for (uint lump_i = 0; lump_i < picHeightLumps; lump_i++) {
+      for (uint byte_i = 0; byte_i < picWidthBytes; byte_i++) {
+        for (uint line_i = 0; line_i < linesPerLump; line_i++) {
+          if (rle1BitBuf & 0x80) {
+            if (packed >= dataEnd) {
+              warning("packed data overrun");
+              pal.clear();
+              surf.free();
+              return false;
+            }
+            picByte = *packed++;
+          }
+          for (byte pixel_bit = 0; pixel_bit < 8; pixel_bit++) {
+            // surf.create() uses calloc so all pixels get initialized to 0
+            // i.e. we can OR bits on instead of requiring explicit setting
+            if (picByte & (0x80 >> pixel_bit)) {
+              pixels[((lump_i * linesPerLump) + line_i) * width + byte_i * 8 + pixel_bit] |= planed_bit;
+            }
+          }
+          rle1BitBuf <<= 1;
+          if (--rle1BitCount == 0) {
+            if (rle2BitCount == 0) {
+              if (rle2 >= dataEnd) {
+                warning("rle2 overrun");
+                pal.clear();
+                surf.free();
+                return false;
+              }
+              rle2BitBuf = *rle2++;
+              rle2BitCount = 8;
+            }
+            if (rle2BitBuf & 0x80) {
+              if (rle1 >= dataEnd) {
+                warning("rle1 overrun");
+                pal.clear();
+                surf.free();
+                return false;
+              }
+              prevRle1BitBuf = rle1BitBuf = *rle1++;
+              rle1BitCount = 8;
+            }
+            else {
+              rle1BitBuf = prevRle1BitBuf;
+              rle1BitCount = 8;
+            }
+            rle2BitBuf <<= 1;
+            rle2BitCount--;
+          }
+
+        }
+      }
+    }
+  }
+  return true;
 }
 
 }

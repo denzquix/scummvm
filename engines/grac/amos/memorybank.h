@@ -23,6 +23,8 @@
 #define AMOS_MEMORYBANK_H
 
 #include "common/stream.h"
+#include "graphics/surface.h"
+#include "graphics/palette.h"
 
 namespace Amos {
 
@@ -38,6 +40,8 @@ public:
   // Bits 28 and 29 are unused
   static const uint LENGTH_MASK = (1U << 28)-1;
   static const uint FLAGS_MASK = 0xC0000000;
+  static const uint SCREEN_HEADER_MAGIC = 0x12031990;
+  static const uint PICTURE_HEADER_MAGIC = 0x06071963;
 
   enum Type {
     MEMBANK_UNKNOWN = 0,
@@ -51,10 +55,8 @@ public:
     MEMBANK_SAMPLES = 8,
   };
 
-  enum Flags {
-    TRY_CHIP = (1U << 30),
-    TRY_FAST = (1U << 31),
-  };
+  static const uint TRY_CHIP = (1U << 30);
+  static const uint TRY_FAST = (1U << 31);
 
 private:
   uint16 _bankNumber;
@@ -83,6 +85,7 @@ public:
   const byte* getData() const { return _data; }
   MemoryBank::Type getBankType() const { return _bankType; }
   Common::String getName() const { return Common::String(_bankName, 8); }
+  bool toPicture(Graphics::Surface& surf, Graphics::Palette& pal);
 
 };
 
