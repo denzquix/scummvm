@@ -1,6 +1,7 @@
 MODULE := engines/grac
 
 MODULE_OBJS = \
+	amos/memorybank.o \
 	grac.o \
 	console.o \
 	events.o \
