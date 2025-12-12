@@ -53,8 +53,8 @@ Common::String GracEngine::getGameId() const {
 }
 
 Common::Error GracEngine::run() {
-	// Initialize 320x200 paletted graphics mode
-	initGraphics(320, 200);
+	// Initialize 640x512 paletted graphics mode
+	initGraphics(640, 512);
 
 	// Set the engine's debugger console
 	setDebugger(new Console());
