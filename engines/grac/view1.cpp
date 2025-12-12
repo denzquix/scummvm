@@ -20,14 +20,35 @@
  */
 
 #include "common/system.h"
+#include "common/fs.h"
+#include "common/ptr.h"
 #include "graphics/paletteman.h"
+#include "grac/grac.h"
 #include "grac/view1.h"
+#include "grac/amos/memorybank.h"
 
 namespace Grac {
 
 bool View1::msgFocus(const FocusMessage &msg) {
-	Common::fill(&_pal[0], &_pal[256 * 3], 0);
-	_offset = 128;
+	Common::FSNode picNode;
+	if (g_game->findFile(Common::String::format("GRAC %d.picture", g_game->getRooms()[g_game->getStartRoom()].pictureIndex), picNode)) {
+		Common::ScopedPtr<Common::SeekableReadStream> stream(picNode.createReadStream());
+		Common::ScopedPtr<Amos::MemoryBank> abk(new Amos::MemoryBank());
+		if (abk->load(stream.get())) {
+			warning("abk is %d bytes", abk->getBankLength());
+			if (abk->toPicture(_surf, _pal)) {
+				warning("Success! %dx%d (%d colors)", _surf.w, _surf.h, _pal.size());
+				g_system->getPaletteManager()->setPalette(_pal);
+			}
+			else {
+				warning("Failure...");
+			}
+		}
+		else {
+			warning("abk failed to load");
+		}
+	}
+
 	return true;
 }
 
@@ -38,26 +59,12 @@ bool View1::msgKeypress(const KeypressMessage &msg) {
 }
 
 void View1::draw() {
-	// Draw a bunch of squares on screen
 	Graphics::ManagedSurface s = getSurface();
 
-	for (int i = 0; i < 100; ++i)
-		s.frameRect(Common::Rect(i, i, 320 - i, 200 - i), i);
+	s.blitFrom(_surf, Common::Rect(0, 0, _surf.w, _surf.h), Common::Rect(0, 0, _surf.w*2, _surf.h*2), &_pal);
 }
 
 bool View1::tick() {
-	// Cycle the palette
-	++_offset;
-	for (int i = 0; i < 256; ++i)
-		_pal[i * 3 + 1] = (i + _offset) % 256;
-	g_system->getPaletteManager()->setPalette(_pal, 0, 256);
-
-	// Below is redundant since we're only cycling the palette, but it demonstrates
-	// how to trigger the view to do further draws after the first time, since views
-	// don't automatically keep redrawing unless you tell it to
-	if ((_offset % 256) == 0)
-		redraw();
-
 	return true;
 }
 

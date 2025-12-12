@@ -22,7 +22,7 @@
 #include "grac/grac.h"
 #include "grac/game.h"
 #include "common/config-manager.h"
-#include "common/file.h"
+#include "common/fs.h"
 #include "common/path.h"
 #include "common/memstream.h"
 #include "common/endian.h"
@@ -530,6 +530,24 @@ Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedS
 
 GracGame::~GracGame() {
   g_game = nullptr;
+}
+
+bool GracGame::findFile(Common::String name, Common::FSNode& outNode) {
+  Common::FSNode node(ConfMan.getPath("path"));
+  Common::FSNode direct = node.getChild(name);
+  if (direct.exists()) {
+    outNode = direct;
+    return true;
+  }
+  Common::FSNode dataFolder = node.getChild("data");
+  if (dataFolder.isDirectory()) {
+    Common::FSNode inData = dataFolder.getChild(name);
+    if (inData.exists()) {
+      outNode = inData;
+      return true;
+    }
+  }
+  return false;
 }
 
 }

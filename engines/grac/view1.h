@@ -23,13 +23,15 @@
 #define GRAC_VIEW1_H
 
 #include "grac/view.h"
+#include "graphics/surface.h"
+#include "graphics/palette.h"
 
 namespace Grac {
 
 class View1 : public View {
 private:
-	byte _pal[256 * 3] = { 0 };
-	int _offset = 0;
+	Graphics::Surface _surf;
+	Graphics::Palette _pal;
 
 public:
 	View1() : View("View1") {}

@@ -22,6 +22,7 @@
 #ifndef GRAC_GAME_H
 #define GRAC_GAME_H
 
+#include "common/fs.h"
 #include "common/path.h"
 #include "common/array.h"
 #include "common/stream.h"
@@ -143,6 +144,10 @@ private:
 public:
   GracGame(const Common::Path& path);
   ~GracGame();
+
+  const Common::Array<RoomDef>& getRooms() const { return _rooms; }
+  int8 getStartRoom() const { return _startRoom; }
+  bool findFile(Common::String name, Common::FSNode& outNode);
 
 };
 
