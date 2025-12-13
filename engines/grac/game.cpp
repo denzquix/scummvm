@@ -557,28 +557,32 @@ bool GracGame::findFile(const Common::String& name, Common::FSNode& outNode) {
 
 const Graphics::AmigaFont* GracGame::loadFont(const Common::String& name, int size) {
   Common::FSNode node(ConfMan.getPath("path"));
-  node = node.getChild("fonts");
-  node = node.getChild(name);
-  if (size == -1) {
-    if (node.isDirectory()) {
-      Common::FSList files;
-      if (node.getChildren(files, Common::FSNode::kListFilesOnly) && !files.empty()) {
-        node = files[0];
-        Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
-        if (stream.get() != nullptr) {
-          return new Graphics::AmigaFont(stream.get());
+  if (node.exists() && node.isDirectory()) {
+    node = node.getChild("fonts");
+    if (node.exists() && node.isDirectory()) {
+      node = node.getChild(name);
+      if (node.exists() && node.isDirectory()) {
+        if (size == -1) {
+          Common::FSList files;
+          if (node.getChildren(files, Common::FSNode::kListFilesOnly) && !files.empty()) {
+            node = files[0];
+            Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
+            if (stream.get() != nullptr) {
+              return new Graphics::AmigaFont(stream.get());
+            }
+          }
+        }
+        else {
+          node = node.getChild(Common::String::format("%d", size));
+          if (node.exists() && !node.isDirectory() && node.isReadable()) {
+            Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
+            return new Graphics::AmigaFont(stream.get());
+          }
         }
       }
     }
   }
-  else {
-    node = node.getChild(Common::String::format("%d", size));
-    if (node.exists() && !node.isDirectory() && node.isReadable()) {
-      Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
-      return new Graphics::AmigaFont(stream.get());
-    }
-  }
-  return new Graphics::AmigaFont();
+  return new Graphics::AmigaFont(); // fall back to default
 }
 
 }
