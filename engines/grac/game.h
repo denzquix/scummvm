@@ -147,7 +147,7 @@ public:
 
   const Common::Array<RoomDef>& getRooms() const { return _rooms; }
   int8 getStartRoom() const { return _startRoom; }
-  bool findFile(Common::String name, Common::FSNode& outNode);
+  bool findFile(const Common::String& name, Common::FSNode& outNode);
   int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
 
 };

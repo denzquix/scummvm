@@ -532,7 +532,7 @@ GracGame::~GracGame() {
   g_game = nullptr;
 }
 
-bool GracGame::findFile(Common::String name, Common::FSNode& outNode) {
+bool GracGame::findFile(const Common::String& name, Common::FSNode& outNode) {
   Common::FSNode node(ConfMan.getPath("path"));
   Common::FSNode direct = node.getChild(name);
   if (direct.exists()) {
