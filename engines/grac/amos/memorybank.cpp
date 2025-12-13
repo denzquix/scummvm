@@ -302,4 +302,62 @@ bool MemoryBank::toPicture(Graphics::Surface& surf, Graphics::Palette& pal) {
   return true;
 }
 
+bool SpriteBank::load(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette) {
+  if (!fromStream) {
+    return false;
+  }
+  uint32 magic = fromStream->readUint32BE();
+  if (magic != MKTAG('A', 'm', 'S', 'p') && magic != MKTAG('A', 'm', 'I', 'c')) {
+    warning("file signature not found");
+    return false;
+  }
+  uint16 count = fromStream->readUint16BE();
+  outSprites.resize(count);
+  for (uint16 sprite_i = 0; sprite_i < count; sprite_i++) {
+    uint16 widthWords = fromStream->readUint16BE();
+    uint16 height = fromStream->readUint16BE();
+    uint16 bitplanes = fromStream->readUint16BE();
+    if (bitplanes < 1 || bitplanes > 5 || widthWords > 16 || height > 1024) {
+      if (bitplanes == 0 && widthWords == 0 && height == 0) {
+        fromStream->skip(4);
+        continue;
+      }
+      warning("sprite %i invalid (width: %d height %d bitplanes: %d)", sprite_i, widthWords*16, height, bitplanes);      
+      outSprites.clear();
+      return false;
+    }
+    uint32 width = widthWords * 16;
+    outSprites[sprite_i].surf.create(widthWords * 16, height, Graphics::PixelFormat::createFormatCLUT8());
+    outSprites[sprite_i].hotspotX = fromStream->readSint16BE();
+    outSprites[sprite_i].hotspotY = fromStream->readSint16BE();
+    byte* pixels = (byte*)outSprites[sprite_i].surf.getPixels();
+    for (uint16 bitplane_i = 0; bitplane_i < bitplanes; bitplane_i++) {
+      const byte planed_bit = 1 << bitplane_i;
+      for (uint16 y = 0; y < height; y++) {
+        for (uint16 xw = 0; xw < widthWords; xw++) {
+          const uint16 chunk = fromStream->readUint16BE();
+          for (uint16 xi = 0; xi < 16; xi++) {
+            if (chunk & (0x8000 >> xi)) {
+              pixels[y * width + xw * 16 + xi] |= planed_bit;
+            }
+          }
+        }
+      }
+    }
+  }
+  outPalette.resize(32, false);
+  for (uint i = 0; i < 32; i++) {
+    byte r,g,b;
+    amigaColor(fromStream->readUint16BE(), r, g, b);
+    outPalette.set(i, r, g, b);
+  }
+  if (fromStream->eos() || fromStream->err()) {
+    warning("stream error");
+    outPalette.clear();
+    outSprites.clear();
+    return false;
+  }
+  return true;
+}
+
 }

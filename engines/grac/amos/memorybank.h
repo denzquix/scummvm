@@ -22,6 +22,7 @@
 #ifndef AMOS_MEMORYBANK_H
 #define AMOS_MEMORYBANK_H
 
+#include "common/array.h"
 #include "common/stream.h"
 #include "graphics/surface.h"
 #include "graphics/palette.h"
@@ -86,6 +87,19 @@ public:
   MemoryBank::Type getBankType() const { return _bankType; }
   Common::String getName() const { return Common::String(_bankName, 8); }
   bool toPicture(Graphics::Surface& surf, Graphics::Palette& pal);
+
+};
+
+struct Sprite {
+  Graphics::Surface surf;
+  int16 hotspotX, hotspotY;
+};
+
+class SpriteBank {
+
+public:
+
+  bool load(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette);
 
 };
 
