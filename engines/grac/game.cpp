@@ -167,7 +167,7 @@ GracGame::GracGame(const Common::Path& path) {
   _controlsObjectBankIndex = mainStream->readSByte();
   _songDevIndex = mainStream->readSByte(); // -1 if not present
   _startRoom = mainStream->readSByte();
-  _startChar = mainStream->readSByte();
+  _startCharacter = mainStream->readSByte();
   _startPoint = mainStream->readSByte();
   _fontSize1 = mainStream->readSByte();
   _fontSize2 = mainStream->readSByte();

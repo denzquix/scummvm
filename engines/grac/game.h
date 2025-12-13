@@ -109,7 +109,7 @@ private:
   int8 _controlsObjectBankIndex;
   int8 _songDevIndex;
   int8 _startRoom;
-  int8 _startChar;
+  int8 _startCharacter;
   int8 _startPoint;
   int8 _fontSize1;
   int8 _fontSize2;
@@ -148,6 +148,7 @@ public:
   const Common::Array<RoomDef>& getRooms() const { return _rooms; }
   int8 getStartRoom() const { return _startRoom; }
   bool findFile(Common::String name, Common::FSNode& outNode);
+  int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
 
 };
 
