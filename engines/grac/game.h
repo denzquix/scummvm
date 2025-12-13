@@ -26,6 +26,7 @@
 #include "common/path.h"
 #include "common/array.h"
 #include "common/stream.h"
+#include "graphics/fonts/amigafont.h"
 #include "grac/grac.h"
 
 namespace Grac {
@@ -111,8 +112,8 @@ private:
   int8 _startRoom;
   int8 _startCharacter;
   int8 _startPoint;
-  int8 _fontSize1;
-  int8 _fontSize2;
+  int8 _controlFontSize;
+  int8 _speechFontSize;
   Common::Array<CharacterDef> _characters;
   int8 _savesDevIndex;
   Common::Array<ObjectBankDef> _objectBanks;
@@ -138,8 +139,11 @@ private:
   ScriptBank _closeupScripts;
   Common::Array<Common::String> _strings;
   Common::Array<Common::String> _devicePaths;
-  Common::String _fontName1;
-  Common::String _fontName2;
+  Common::String _controlFontName;
+  Common::String _speechFontName;
+  const Graphics::AmigaFont* _speechFont;
+  const Graphics::AmigaFont* _controlFont;
+  const Graphics::AmigaFont* loadFont(const Common::String& name, int size);
 
 public:
   GracGame(const Common::Path& path);
@@ -149,6 +153,8 @@ public:
   int8 getStartRoom() const { return _startRoom; }
   bool findFile(const Common::String& name, Common::FSNode& outNode);
   int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
+  const Graphics::AmigaFont* getSpeechFont() const { return _speechFont; }
+  const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
 
 };
 

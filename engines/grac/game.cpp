@@ -169,8 +169,8 @@ GracGame::GracGame(const Common::Path& path) {
   _startRoom = mainStream->readSByte();
   _startCharacter = mainStream->readSByte();
   _startPoint = mainStream->readSByte();
-  _fontSize1 = mainStream->readSByte();
-  _fontSize2 = mainStream->readSByte();
+  _controlFontSize = mainStream->readSByte();
+  _speechFontSize = mainStream->readSByte();
 
   for (uint i = 0; i < sharedResourceCount; i++) {
     _characters[i].devIndex = mainStream->readSByte();
@@ -226,10 +226,10 @@ GracGame::GracGame(const Common::Path& path) {
     }
   }
 
-  if (!readTerminatedString(mainStream, _fontName1)) {
+  if (!readTerminatedString(mainStream, _controlFontName)) {
     error("Unable to read font name");
   }
-  if (!readTerminatedString(mainStream, _fontName2)) {
+  if (!readTerminatedString(mainStream, _speechFontName)) {
     error("Unable to read font name");
   }
 
@@ -262,6 +262,9 @@ GracGame::GracGame(const Common::Path& path) {
   }
 
   delete mainStream;
+
+  _controlFont = loadFont(_controlFontName, _controlFontSize);
+  _speechFont = loadFont(_speechFontName, _speechFontSize);
 
   g_game = this;
 }
@@ -530,6 +533,8 @@ Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedS
 
 GracGame::~GracGame() {
   g_game = nullptr;
+  delete _speechFont;
+  delete _controlFont;
 }
 
 bool GracGame::findFile(const Common::String& name, Common::FSNode& outNode) {
@@ -548,6 +553,32 @@ bool GracGame::findFile(const Common::String& name, Common::FSNode& outNode) {
     }
   }
   return false;
+}
+
+const Graphics::AmigaFont* GracGame::loadFont(const Common::String& name, int size) {
+  Common::FSNode node(ConfMan.getPath("path"));
+  node = node.getChild("fonts");
+  node = node.getChild(name);
+  if (size == -1) {
+    if (node.isDirectory()) {
+      Common::FSList files;
+      if (node.getChildren(files, Common::FSNode::kListFilesOnly) && !files.empty()) {
+        node = files[0];
+        Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
+        if (stream.get() != nullptr) {
+          return new Graphics::AmigaFont(stream.get());
+        }
+      }
+    }
+  }
+  else {
+    node = node.getChild(Common::String::format("%d", size));
+    if (node.exists() && !node.isDirectory() && node.isReadable()) {
+      Common::ScopedPtr<Common::SeekableReadStream> stream(node.createReadStream());
+      return new Graphics::AmigaFont(stream.get());
+    }
+  }
+  return new Graphics::AmigaFont();
 }
 
 }
