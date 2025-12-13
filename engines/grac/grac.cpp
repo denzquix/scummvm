@@ -90,4 +90,31 @@ Common::Error GracEngine::syncGame(Common::Serializer &s) {
 	return Common::kNoError;
 }
 
+static uint16 getAmiColor(const Graphics::Palette& p, uint i) {
+	byte r, g, b;
+	p.get(i, r, g, b);
+	return ((r & 0xf0) << 4) | (g & 0xf0) | (b >> 4);
+}
+
+void GracEngine::renderSpeech(const Common::String& text, Graphics::Surface& surface, int color) {
+	auto font = g_game->getSpeechFont();
+	int w = font->getStringWidth(text);
+	surface.create(1 + w + 1, 1 + font->getFontHeight() + 1, Graphics::PixelFormat::createFormatCLUT8());
+	surface.fillRect(Common::Rect(0, 0, surface.w, surface.h), SPEECH_KEY_COLOR);
+	Graphics::Palette pal = g_system->getPaletteManager()->grabPalette(0, 32);
+	uint16 lightestColor, darkestColor;
+	lightestColor = darkestColor = 0;
+	for (uint i = 1; i < 32; i++) {
+		uint16 col = getAmiColor(pal, i);
+		if (col < getAmiColor(pal, darkestColor)) darkestColor = i;
+		if (col > getAmiColor(pal, lightestColor)) lightestColor = i;
+	}
+	if (color == -1) color = lightestColor;
+	font->drawString(&surface, text, 1, 0, w, darkestColor);
+	font->drawString(&surface, text, 0, 1, w, darkestColor);
+	font->drawString(&surface, text, 1, 2, w, darkestColor);
+	font->drawString(&surface, text, 2, 1, w, darkestColor);
+	font->drawString(&surface, text, 1, 1, w, color);
+}
+
 } // End of namespace Grac

@@ -59,6 +59,8 @@ protected:
 	}
 
 public:
+	static const int SPEECH_KEY_COLOR = 32;
+
 	GracEngine(OSystem *syst, const ADGameDescription *gameDesc);
 	~GracEngine() override;
 
@@ -104,6 +106,8 @@ public:
 		Common::Serializer s(stream, nullptr);
 		return syncGame(s);
 	}
+
+	void renderSpeech(const Common::String& text, Graphics::Surface& surface, int color);
 };
 
 extern GracEngine *g_engine;

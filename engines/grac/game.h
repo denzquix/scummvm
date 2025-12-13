@@ -155,6 +155,7 @@ public:
   int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
   const Graphics::AmigaFont* getSpeechFont() const { return _speechFont; }
   const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
+  int getCharacterSpeechColor(int charIndex) const { return _characters[charIndex].speechColor; }
 
 };
 
