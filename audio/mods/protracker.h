@@ -100,7 +100,7 @@ private:
 	} _track[4];
 
 public:
-	ProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo);
+	ProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo, int startpos = 0);
 
 protected:
 	ProtrackerStream(int rate, bool stereo);
@@ -139,13 +139,27 @@ class AudioStream;
  * to the 'stream' object is kept, so you can safely delete it after
  * invoking this factory.
  *
+ * Some modules contain multiple independent sections (often called
+ * "subsongs") by placing additional sequences in the order list that
+ * are not reached during normal playback. The 'startpos' parameter
+ * can be used to select the order position for playback to begin at.
+ * 
+ * Use of 'startpos' is only intended for modules authored to begin
+ * from that order position. Modules often depend on state established
+ * by earlier orders (e.g. speed/BPM, instrument volume, effect state)
+ * and so jumping in arbitrarily is likely to sound wrong.
+ * 
+ * If 'startpos' is out of range, the module will begin from order 0
+ * as usual.
+ * 
  * @param stream	the ReadStream from which to read the ProTracker data
  * @param rate		TODO
  * @param stereo	TODO
  * @param module	can be used to return the Module object (rarely useful)
+ * @param startpos	initial order position (index into the order list)
  * @return	a new AudioStream, or NULL, if an error occurred
  */
-AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs = 0, int rate = 44100, bool stereo = true, Modules::Module **module = 0);
+AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs = 0, int rate = 44100, bool stereo = true, Modules::Module **module = 0, int startpos = 0);
 
 } // End of namespace Audio
 

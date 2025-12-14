@@ -62,12 +62,15 @@ ProtrackerStream::ProtrackerStream(int rate, bool stereo) : Paula(stereo, rate, 
 	ARRAYCLEAR(_track);
 }
 
-ProtrackerStream::ProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo) :
+ProtrackerStream::ProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo, int startpos) :
 		ProtrackerStream(rate, stereo) {
 	_module = new Module();
 	bool result = _module->load(*stream, offs);
 	assert(result);
 	(void)result;
+	if (startpos > 0 && startpos < _module->songlen) {
+		_pos = startpos;
+	}
 
 	startPaula();
 }
@@ -408,8 +411,8 @@ void ProtrackerStream::doVolSlide(int track, byte ex, byte ey) {
 
 namespace Audio {
 
-AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo, Modules::Module **module) {
-	Modules::ProtrackerStream *protrackerStream = new Modules::ProtrackerStream(stream, offs, rate, stereo);
+AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo, Modules::Module **module, int startpos) {
+	Modules::ProtrackerStream *protrackerStream = new Modules::ProtrackerStream(stream, offs, rate, stereo, startpos);
 	if (module) {
 		*module = protrackerStream->getModule();
 	}
