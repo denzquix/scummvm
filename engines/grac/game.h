@@ -154,7 +154,11 @@ public:
   const Common::Array<RoomDef>& getRooms() const { return _rooms; }
   int8 getStartRoom() const { return _startRoom; }
   bool findFile(const Common::String& name, Common::FSNode& outNode);
-  int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
+  int8 getStartCharacter() const {
+    int8 charIndex = _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter];
+    if (charIndex == -1) charIndex = 0;
+    return charIndex;
+  }
   const Graphics::AmigaFont* getSpeechFont() const { return _speechFont; }
   const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
   int getCharacterSpeechColor(int charIndex) const { return charIndex < 0 || (uint)charIndex >= _characters.size() ? -1 : _characters[charIndex].speechColor; }
