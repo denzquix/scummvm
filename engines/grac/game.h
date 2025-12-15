@@ -90,6 +90,34 @@ public:
     Common::String toString() const;
   };
 
+  enum VerbType {
+    kVerbAny = 1,
+    kVerbInv = 2,
+    kVerbRoom = 3,
+    kVerbInvAny = 4,
+    kVerbInvInv = 5,
+    kVerbInvRoom = 6,
+    kVerbQuick = 7,
+  };
+
+  enum MessageDisplayMode {
+    kMessageDisplayPrint = 0,
+    kMessageDisplaySay = 1,
+    kMessageDisplayNone = 2,
+  };
+
+  struct VerbDef {
+    int16 downImage;
+    int16 upImage;
+    Common::Point imagePoint;
+    Common::Rect zoneRect;
+    Common::String text;
+    Common::String preposition;
+    int16 type;
+    int16 messageDisplayMode;
+    int16 defaultMessage;
+  };
+
   struct ScriptBank {
     bool readV1(Common::SeekableReadStream* fromStream, uint scriptCount);
     bool readV2(Common::SeekableReadStream* fromStream, uint scriptCount, uint commentCount);
@@ -143,6 +171,21 @@ private:
   const Graphics::AmigaFont* _speechFont;
   const Graphics::AmigaFont* _controlFont;
   const Graphics::AmigaFont* loadFont(const Common::String& name, int size);
+  int _controlsX;
+  int _controlsY;
+  int _controlsWidth;
+  int _controlsHeight;
+  int _roomViewWidth;
+  int _roomViewHeight;
+  int _messageBoxX1;
+  int _messageBoxY1;
+  int _messageBoxX2;
+  int _messageBoxY2;
+  int _verbLineX;
+  int _verbLineY;
+  int _controlTextFgColor;
+  int _controlTextBgColor;
+  Common::Array<VerbDef> _verbs;
 
 public:
   GracGame(const Common::Path& path, int versionMajor);

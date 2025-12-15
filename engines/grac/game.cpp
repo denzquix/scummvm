@@ -243,6 +243,7 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   uint scriptCommentCount = (versionMajor >= 2) ? 101 : 0;
   uint stringCount = 1000;
   uint characterScriptCount = 51;
+  uint verbScriptCount = verbCount;
 
   _controlsDataLength = mainStream->readUint32BE();
   _inventoryDataLength = mainStream->readUint32BE();
@@ -414,6 +415,71 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   }
 
   delete mainStream;
+
+  Common::FSNode fsNode;
+  if (!findFile("GRAC.cont", fsNode)) {
+    error("GRAC.cont file not found");
+  }
+  Common::SeekableReadStream* controlsStream = fsNode.createReadStream();
+  if (!controlsStream) {
+    error("Unable to open GRAC.cont file");
+  }
+  controlsStream = unpack(controlsStream, false);
+  if (!controlsStream) {
+    error("Failed to unpack GRAC.cont file");
+  }
+  _controlsX = controlsStream->readSint16BE();
+  _controlsY = controlsStream->readSint16BE();
+  _controlsWidth = controlsStream->readSint16BE();
+  _controlsHeight = controlsStream->readSint16BE();
+  _roomViewWidth = controlsStream->readSint16BE();
+  _roomViewHeight = controlsStream->readSint16BE();
+  _messageBoxX1 = controlsStream->readSint16BE();
+  _messageBoxY1 = controlsStream->readSint16BE();
+  _messageBoxX2 = controlsStream->readSint16BE();
+  _messageBoxY2 = controlsStream->readSint16BE();
+  _verbLineX = controlsStream->readSint16BE();
+  _verbLineY = controlsStream->readSint16BE();
+  (void)controlsStream->readSint16BE(); // unused
+  (void)controlsStream->readSint16BE(); // unused
+  _controlTextFgColor = controlsStream->readSint16BE();
+  _controlTextBgColor = controlsStream->readSint16BE();
+
+  _verbs.resize(verbCount);
+  for (uint verb_i = 0; verb_i < verbCount; verb_i++) {
+    _verbs[verb_i].downImage = controlsStream->readSint16BE();
+    _verbs[verb_i].zoneRect.left = controlsStream->readSint16BE();
+    _verbs[verb_i].zoneRect.top = controlsStream->readSint16BE();
+    _verbs[verb_i].zoneRect.right = controlsStream->readSint16BE();
+    _verbs[verb_i].zoneRect.bottom = controlsStream->readSint16BE();
+    _verbs[verb_i].imagePoint.x = controlsStream->readSint16BE();
+    _verbs[verb_i].imagePoint.y = controlsStream->readSint16BE();
+    _verbs[verb_i].upImage = controlsStream->readSint16BE();
+    (void)controlsStream->readSint16BE(); // unused
+    _verbs[verb_i].defaultMessage = controlsStream->readSint16BE();
+    _verbs[verb_i].type = controlsStream->readSint16BE();
+    _verbs[verb_i].messageDisplayMode = controlsStream->readSint16BE();
+  }
+  if (_versionMajor >= 2) {
+    if (!_verbScripts.readV2(controlsStream, verbScriptCount, scriptCommentCount)) {
+      error("Failed to load verb scripts");
+    }
+  }
+  else {
+    if (!_verbScripts.readV1(controlsStream, verbScriptCount)) {
+      error("Failed to load verb scripts");
+    }
+  }
+  for (uint verb_i = 0; verb_i < verbCount; verb_i++) {
+    if (!readTerminatedString(controlsStream, _verbs[verb_i].text)) {
+      error("Failed to read verb");
+    }
+    if (!readTerminatedString(controlsStream, _verbs[verb_i].preposition)) {
+      error("Failed to read prepositiond");
+    }
+  }
+
+  delete controlsStream;
 
   _controlFont = loadFont(_controlFontName, _controlFontSize);
   _speechFont = loadFont(_speechFontName, _speechFontSize);
