@@ -20,18 +20,46 @@
  */
 
 #include "grac/console.h"
+#include "grac/grac.h"
 
 namespace Grac {
 
 Console::Console() : GUI::Debugger() {
-	registerCmd("test",   WRAP_METHOD(Console, Cmd_test));
+	registerCmd("viewscript", WRAP_METHOD(Console, Cmd_viewscript));
 }
 
 Console::~Console() {
 }
 
-bool Console::Cmd_test(int argc, const char **argv) {
-	debugPrintf("Test\n");
+bool Console::Cmd_viewscript(int argc, const char **argv) {
+	const GracGame::ScriptBank* scriptBank;
+	if (argc != 3) {
+		debugPrintf("Usage: viewscript char X (X = script number)\n");
+		return true;
+	}
+	Common::String arg1(argv[1]);
+	Common::String arg2(argv[2]);
+	if (arg1 == "char") {
+		scriptBank = g_game->getCharacterScripts();
+	}
+	else {
+		debugPrintf("Usage: viewscript char X (X = script number)\n");
+		return true;
+	}
+	if (!scriptBank) {
+		debugPrintf("Error: script bank is null!\n");
+		return true;
+	}
+	uint64 num = arg2.asUint64();
+	if (num >= scriptBank->scripts.size()) {
+		debugPrintf("Script number out of range\n");
+		return true;
+	}
+	debugPrintf("Script %d\n", (int)num);
+	for (uint instr_i = 0; instr_i < scriptBank->scripts[num].size(); instr_i++) {
+		auto instr = &scriptBank->scripts[num][instr_i];
+		debugPrintf("%s\n", instr->toString().c_str());
+	}
 	return true;
 }
 
