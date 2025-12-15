@@ -893,7 +893,7 @@ Common::String GracGame::ScriptInstruction::toString() const {
     case 111: return "scale " + encodeParam(param1, param1Type); // percent
 
     case 6: return "reach " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 7: return "take" + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
+    case 7: return "take " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 8: return "paste " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 10: return "say " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 11: return "load room " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
