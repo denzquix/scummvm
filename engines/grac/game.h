@@ -193,6 +193,7 @@ private:
   int _controlTextBgColor;
   Common::Array<VerbDef> _verbs;
   Common::Array<InventoryItemDef> _inventoryItems;
+  uint _inventoryColumnWidth;
 
 public:
   GracGame(const Common::Path& path, int versionMajor);

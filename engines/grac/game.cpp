@@ -538,6 +538,12 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   _controlFont = loadFont(_controlFontName, _controlFontSize);
   _speechFont = loadFont(_speechFontName, _speechFontSize);
 
+  _inventoryColumnWidth = 0;
+  for (uint inv_i = 0; inv_i < inventoryItemCount; inv_i++) {
+    uint width = _controlFont->getStringWidth(_inventoryItems[inv_i].name);
+    if (width > _inventoryColumnWidth) _inventoryColumnWidth = width;
+  }
+
   g_game = this;
 }
 
