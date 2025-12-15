@@ -44,9 +44,12 @@ bool Console::Cmd_viewscript(int argc, const char **argv) {
 		else if (arg1 == "verb") {
 			scriptBank = g_game->getVerbScripts();
 		}
+		else if (arg1 == "inv") {
+			scriptBank = g_game->getInventoryScripts();
+		}
 	}
 	if (scriptBank == nullptr) {
-		debugPrintf("Usage: viewscript (char|verb) X (X = script number)\n");
+		debugPrintf("Usage: viewscript (char|verb|inv) X (X = script number)\n");
 		return true;
 	}
 	if (num >= scriptBank->scripts.size()) {

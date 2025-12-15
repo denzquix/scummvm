@@ -242,8 +242,10 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   uint verbCount = 10;
   uint scriptCommentCount = (versionMajor >= 2) ? 101 : 0;
   uint stringCount = 1000;
+  uint inventoryItemCount = 100;
   uint characterScriptCount = 51;
   uint verbScriptCount = verbCount;
+  uint inventoryScriptCount = 90;
 
   _controlsDataLength = mainStream->readUint32BE();
   _inventoryDataLength = mainStream->readUint32BE();
@@ -479,7 +481,59 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
     }
   }
 
+  if (controlsStream->eos()) {
+    error("Truncated data");
+  }
+  if (controlsStream->err()) {
+    error("Stream error");
+  }
+
   delete controlsStream;
+
+  if (!findFile("GRAC.inv", fsNode)) {
+    error("GRAC.inv file not found");
+  }
+  Common::SeekableReadStream* invStream = fsNode.createReadStream();
+  if (!invStream) {
+    error("Unable to open GRAC.inv file");
+  }
+  invStream = unpack(invStream, false);
+  if (!invStream) {
+    error("Failed to unpack GRAC.inv file");
+  }
+  _inventoryItems.resize(inventoryItemCount);
+  for (uint inv_i = 0; inv_i < inventoryItemCount; inv_i++) {
+    _inventoryItems[inv_i].defaultMessage = invStream->readSint16BE();
+    _inventoryItems[inv_i].scripts.resize(verbCount);
+    for (uint verb_i = 0; verb_i < verbCount; verb_i++) {
+      _inventoryItems[inv_i].scripts[verb_i] = invStream->readSint16BE();
+    }
+  }
+
+  if (_versionMajor >= 2) {
+    if (!_inventoryScripts.readV2(invStream, inventoryScriptCount, scriptCommentCount)) {
+      error("Failed to load verb scripts");
+    }
+  }
+  else {
+    if (!_inventoryScripts.readV1(invStream, inventoryScriptCount)) {
+      error("Failed to load verb scripts");
+    }
+  }
+  for (uint inv_i = 0; inv_i < inventoryItemCount; inv_i++) {
+    if (!readTerminatedString(invStream, _inventoryItems[inv_i].name)) {
+      error("Unable to read inventory item name");
+    }
+  }
+
+  if (invStream->eos()) {
+    error("Truncated data");
+  }
+  if (invStream->err()) {
+    error("Stream error");
+  }
+
+  delete invStream;
 
   _controlFont = loadFont(_controlFontName, _controlFontSize);
   _speechFont = loadFont(_speechFontName, _speechFontSize);

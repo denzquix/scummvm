@@ -118,6 +118,12 @@ public:
     int16 defaultMessage;
   };
 
+  struct InventoryItemDef {
+    Common::String name;
+    int defaultMessage;
+    Common::Array<int> scripts;
+  };
+
   struct ScriptBank {
     bool readV1(Common::SeekableReadStream* fromStream, uint scriptCount);
     bool readV2(Common::SeekableReadStream* fromStream, uint scriptCount, uint commentCount);
@@ -186,6 +192,7 @@ private:
   int _controlTextFgColor;
   int _controlTextBgColor;
   Common::Array<VerbDef> _verbs;
+  Common::Array<InventoryItemDef> _inventoryItems;
 
 public:
   GracGame(const Common::Path& path, int versionMajor);
@@ -204,6 +211,7 @@ public:
   int getCharacterSpeechColor(int charIndex) const { return charIndex < 0 || (uint)charIndex >= _characters.size() ? -1 : _characters[charIndex].speechColor; }
   const ScriptBank* getCharacterScripts() const { return &_characterScripts; }
   const ScriptBank* getVerbScripts() const { return &_verbScripts; }
+  const ScriptBank* getInventoryScripts() const { return &_inventoryScripts; }
 
 };
 
