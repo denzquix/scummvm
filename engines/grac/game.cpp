@@ -475,7 +475,7 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
       error("Failed to read verb");
     }
     if (!readTerminatedString(controlsStream, _verbs[verb_i].preposition)) {
-      error("Failed to read prepositiond");
+      error("Failed to read preposition");
     }
   }
 
