@@ -22,6 +22,7 @@
 #include "grac/grac.h"
 #include "grac/detection.h"
 #include "grac/console.h"
+#include "grac/amos/memorybank.h"
 #include "grac/game.h"
 #include "common/scummsys.h"
 #include "common/config-manager.h"
@@ -118,6 +119,29 @@ void GracEngine::renderSpeech(const Common::String& text, Graphics::Surface& sur
 	font->drawString(&surface, text, 1, 2, w, darkestColor);
 	font->drawString(&surface, text, 2, 1, w, darkestColor);
 	font->drawString(&surface, text, 1, 1, w, color);
+}
+
+bool GracEngine::loadPicture(int pictureNumber, Graphics::Surface& outSurf, Graphics::Palette& outPalette, uint8 paletteOffset) {
+	Common::FSNode fsNode;
+	if (!g_game->findFile(Common::String::format("GRAC %d.picture",pictureNumber), fsNode)) {
+		return false;
+	}
+	Common::ScopedPtr<Common::SeekableReadStream> stream(fsNode.createReadStream());
+	Common::ScopedPtr<Amos::MemoryBank> abk(new Amos::MemoryBank());
+	if (abk->load(stream.get())) {
+		bool result = abk->toPicture(outSurf, outPalette);
+		if (result) {
+			if (paletteOffset) {
+				byte* pixels = (byte*)outSurf.getPixels();
+				byte* pixelsEnd = pixels + outSurf.pitch * outSurf.h;
+				while (pixels < pixelsEnd) {
+					*pixels++ += paletteOffset;
+				}
+			}
+			return true;
+		}
+	}
+	return false;
 }
 
 } // End of namespace Grac

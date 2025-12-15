@@ -108,6 +108,8 @@ public:
 	}
 
 	void renderSpeech(const Common::String& text, Graphics::Surface& surface, int color);
+
+	bool loadPicture(int number, Graphics::Surface& outSurf, Graphics::Palette& outPalette, uint8 paletteOffset = 0);
 };
 
 extern GracEngine *g_engine;
