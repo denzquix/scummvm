@@ -954,7 +954,7 @@ Common::String GracGame::ScriptInstruction::toString() const {
     case 12: return "character frame " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 13: return "object frame " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 15: return "face " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 16: return "compare flag" + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
+    case 16: return "compare flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 17: return "compare value " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
     case 18: return "if " + encodeComparator(param1) + ", " + encodeParam(param2, param2Type);
     case 20: return "compare item " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
