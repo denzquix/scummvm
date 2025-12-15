@@ -430,12 +430,14 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   if (!controlsStream) {
     error("Failed to unpack GRAC.cont file");
   }
-  _controlsX = controlsStream->readSint16BE();
-  _controlsY = controlsStream->readSint16BE();
-  _controlsWidth = controlsStream->readSint16BE();
-  _controlsHeight = controlsStream->readSint16BE();
-  _roomViewWidth = controlsStream->readSint16BE();
-  _roomViewHeight = controlsStream->readSint16BE();
+  _controlsPos.x = controlsStream->readSint16BE();
+  _controlsPos.y = controlsStream->readSint16BE();
+  int roomViewWidth = controlsStream->readSint16BE();
+  int roomViewHeight = controlsStream->readSint16BE();
+  _roomViewRect.left = controlsStream->readSint16BE();
+  _roomViewRect.top = controlsStream->readSint16BE();
+  _roomViewRect.setWidth(roomViewWidth);
+  _roomViewRect.setHeight(roomViewHeight);
   _messageBoxX1 = controlsStream->readSint16BE();
   _messageBoxY1 = controlsStream->readSint16BE();
   _messageBoxX2 = controlsStream->readSint16BE();

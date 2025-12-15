@@ -177,12 +177,8 @@ private:
   const Graphics::AmigaFont* _speechFont;
   const Graphics::AmigaFont* _controlFont;
   const Graphics::AmigaFont* loadFont(const Common::String& name, int size);
-  int _controlsX;
-  int _controlsY;
-  int _controlsWidth;
-  int _controlsHeight;
-  int _roomViewWidth;
-  int _roomViewHeight;
+  Common::Point _controlsPos;
+  Common::Rect _roomViewRect;
   int _messageBoxX1;
   int _messageBoxY1;
   int _messageBoxX2;
@@ -213,6 +209,9 @@ public:
   const ScriptBank* getCharacterScripts() const { return &_characterScripts; }
   const ScriptBank* getVerbScripts() const { return &_verbScripts; }
   const ScriptBank* getInventoryScripts() const { return &_inventoryScripts; }
+  const int getControlPicture() const { return _controlsPictureIndex; }
+  const Common::Point getControlPos() const { return _controlsPos; }
+  const Common::Rect getRoomViewRect() const { return _roomViewRect; }
 
 };
 
