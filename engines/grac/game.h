@@ -203,6 +203,7 @@ public:
   const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
   int getCharacterSpeechColor(int charIndex) const { return charIndex < 0 || (uint)charIndex >= _characters.size() ? -1 : _characters[charIndex].speechColor; }
   const ScriptBank* getCharacterScripts() const { return &_characterScripts; }
+  const ScriptBank* getVerbScripts() const { return &_verbScripts; }
 
 };
 

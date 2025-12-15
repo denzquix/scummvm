@@ -32,34 +32,33 @@ Console::~Console() {
 }
 
 bool Console::Cmd_viewscript(int argc, const char **argv) {
-	const GracGame::ScriptBank* scriptBank;
-	if (argc != 3) {
-		debugPrintf("Usage: viewscript char X (X = script number)\n");
+	const GracGame::ScriptBank* scriptBank = nullptr;
+	uint64 num = 0;
+	if (argc == 3) {
+		Common::String arg1(argv[1]);
+		Common::String arg2(argv[2]);
+		num = arg2.asUint64();
+		if (arg1 == "char") {
+			scriptBank = g_game->getCharacterScripts();
+		}
+		else if (arg1 == "verb") {
+			scriptBank = g_game->getVerbScripts();
+		}
+	}
+	if (scriptBank == nullptr) {
+		debugPrintf("Usage: viewscript (char|verb) X (X = script number)\n");
 		return true;
 	}
-	Common::String arg1(argv[1]);
-	Common::String arg2(argv[2]);
-	if (arg1 == "char") {
-		scriptBank = g_game->getCharacterScripts();
-	}
-	else {
-		debugPrintf("Usage: viewscript char X (X = script number)\n");
-		return true;
-	}
-	if (!scriptBank) {
-		debugPrintf("Error: script bank is null!\n");
-		return true;
-	}
-	uint64 num = arg2.asUint64();
 	if (num >= scriptBank->scripts.size()) {
 		debugPrintf("Script number out of range\n");
 		return true;
 	}
-	debugPrintf("Script %d\n", (int)num);
+	debugPrintf("Script %d\n========\n", (int)num);
 	for (uint instr_i = 0; instr_i < scriptBank->scripts[num].size(); instr_i++) {
 		auto instr = &scriptBank->scripts[num][instr_i];
 		debugPrintf("%s\n", instr->toString().c_str());
 	}
+	debugPrintf("\n");
 	return true;
 }
 
