@@ -81,24 +81,21 @@ public:
     Common::String name;
   };
 
+  struct ScriptInstruction {
+    int16 opcode;
+    int16 param1;
+    int16 param2;
+    uint8 param1Type; // 0 in GRAC 1
+    uint8 param2Type; // 0 in GRAC 1
+    Common::String toString() const;
+  };
+
   struct ScriptBank {
-    byte *bytecode = nullptr;
-    uint32 size = 0;
-    int firstScript = 0;  // FIRST1 equivalent (0, 50, 60, 150, or 201)
-    
-    ScriptBank() = default;
-    ~ScriptBank() {
-      delete[] bytecode;
-    }
-
-    ScriptBank(const ScriptBank&) = delete;
-    ScriptBank& operator=(const ScriptBank&) = delete;
-
     bool readV1(Common::SeekableReadStream* fromStream, uint scriptCount);
-    bool readV2(Common::SeekableReadStream* fromStream, uint entryPointCount, uint commentCount);
+    bool readV2(Common::SeekableReadStream* fromStream, uint scriptCount, uint commentCount);
 
+    Common::Array<Common::Array<ScriptInstruction>> scripts;
     Common::Array<Common::String> comments;
-    Common::Array<int16> entryPoints;
   };
 
 private:
@@ -162,6 +159,7 @@ public:
   const Graphics::AmigaFont* getSpeechFont() const { return _speechFont; }
   const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
   int getCharacterSpeechColor(int charIndex) const { return charIndex < 0 || (uint)charIndex >= _characters.size() ? -1 : _characters[charIndex].speechColor; }
+  const ScriptBank* getCharacterScripts() const { return &_characterScripts; }
 
 };
 
