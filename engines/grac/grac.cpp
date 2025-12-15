@@ -61,18 +61,21 @@ Common::Error GracEngine::run() {
 
 	Common::Path gamePath = ConfMan.getPath("path");
 
+	int versionMajor = -1;
+
 	for (auto fd = _gameDescription->filesDescriptions; fd->fileName; fd++) {
 		if ((fd->fileType & GRACFILE_TYPEMASK) == GRACFILE_MAIN) {
 			if (fd->fileType & GRACFILE_GRAC2) {
-				gamePath = gamePath.append(fd->fileName);
-				break;
+				versionMajor = 2;
 			}
 			else {
-				error("Only GRAC2 games are currently supported");
+				versionMajor = 1;
 			}
+			gamePath = gamePath.append(fd->fileName);
+			break;
 		}
 	}
-	_game = new GracGame(gamePath);
+	_game = new GracGame(gamePath, versionMajor);
 
 	runGame();
 

@@ -94,14 +94,16 @@ public:
     ScriptBank(const ScriptBank&) = delete;
     ScriptBank& operator=(const ScriptBank&) = delete;
 
-    bool read(Common::SeekableReadStream* fromStream, uint entryPointCount, uint commentCount);
+    bool readV1(Common::SeekableReadStream* fromStream, uint scriptCount);
+    bool readV2(Common::SeekableReadStream* fromStream, uint entryPointCount, uint commentCount);
 
     Common::Array<Common::String> comments;
     Common::Array<int16> entryPoints;
   };
 
 private:
-  Common::SeekableReadStream* unpack(Common::SeekableReadStream *packedStream);
+  Common::SeekableReadStream* unpack(Common::SeekableReadStream *packedStream, bool isGrac2MainFile);  
+  int _versionMajor;
   uint32 _controlsDataLength;
   uint32 _inventoryDataLength;
   int8 _inventoryDevIndex;
@@ -146,7 +148,7 @@ private:
   const Graphics::AmigaFont* loadFont(const Common::String& name, int size);
 
 public:
-  GracGame(const Common::Path& path);
+  GracGame(const Common::Path& path, int versionMajor);
   ~GracGame();
 
   const Common::Array<RoomDef>& getRooms() const { return _rooms; }
@@ -155,7 +157,7 @@ public:
   int8 getStartCharacter() const { return _objectBanks[_rooms[_startRoom].objectBankIndex].characters[_startCharacter]; }
   const Graphics::AmigaFont* getSpeechFont() const { return _speechFont; }
   const Graphics::AmigaFont* getControlFont() const { return _controlFont; }
-  int getCharacterSpeechColor(int charIndex) const { return _characters[charIndex].speechColor; }
+  int getCharacterSpeechColor(int charIndex) const { return charIndex < 0 || (uint)charIndex >= _characters.size() ? -1 : _characters[charIndex].speechColor; }
 
 };
 

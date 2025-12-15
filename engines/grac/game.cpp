@@ -46,7 +46,7 @@ bool readTerminatedString(Common::SeekableReadStream *stream, Common::String &ou
   }
 }
 
-bool GracGame::ScriptBank::read(Common::SeekableReadStream* fromStream, uint entryPointCount, uint commentCount) {
+bool GracGame::ScriptBank::readV2(Common::SeekableReadStream* fromStream, uint entryPointCount, uint commentCount) {
   entryPoints.resize(entryPointCount);
   for (uint i = 0; i < entryPointCount; i++) {
     entryPoints[i] = fromStream->readSint16BE();
@@ -77,7 +77,64 @@ bool GracGame::ScriptBank::read(Common::SeekableReadStream* fromStream, uint ent
   return true;
 }
 
-GracGame::GracGame(const Common::Path& path) {
+bool GracGame::ScriptBank::readV1(Common::SeekableReadStream* fromStream, uint scriptCount) {
+
+  if (!fromStream) {
+    return false;
+  }
+
+  // GRAC 1 stores scripts as fixed 96-byte blocks:
+  // - 16 instructions at 6 bytes each (opcode + param1 + param2)
+  // - No entry points; scripts always start at first instruction
+  // We convert to GRAC 2 format: 8 bytes with type modifiers added
+  
+  const uint instructionsPerScript = 16;
+  const uint instructionSizeV1 = 6;
+  const uint instructionSizeV2 = 8;
+  
+  // There is a 2 byte terminator on each script
+  const uint bytesPerScriptV2 = instructionsPerScript * instructionSizeV2 + 2;
+
+  uint newBytecodeSize = scriptCount * bytesPerScriptV2;
+  byte *newBytecode = new byte[newBytecodeSize];
+  memset(newBytecode, 0, newBytecodeSize);
+  
+  entryPoints.resize(scriptCount);
+
+  for (uint script_i = 0; script_i < scriptCount; script_i++) {
+    byte *outBytecode = newBytecode + script_i*bytesPerScriptV2;
+    byte v1Bytecode[instructionSizeV1 * instructionsPerScript];
+    if (fromStream->read(v1Bytecode, sizeof(v1Bytecode)) != sizeof(v1Bytecode)) {
+      delete[] newBytecode;
+      return false;
+    }
+    uint instr_i;
+    for (instr_i = 0; instr_i < instructionsPerScript; instr_i++) {
+      uint16 opcode = READ_BE_UINT16(v1Bytecode + instr_i * instructionSizeV1);
+      if (opcode == 0 || opcode & 0x8000) {
+        break;
+      }
+      memcpy(outBytecode, v1Bytecode + instructionSizeV1 * instr_i, instructionSizeV1);
+      outBytecode += instructionSizeV2;
+    }
+    outBytecode[0] = 0xD7;
+    entryPoints[script_i] = instr_i == 0 ? -1 : (int16)(script_i * bytesPerScriptV2);
+  }
+
+  if (fromStream->err() || fromStream->eos()) {
+    delete[] newBytecode;
+    return false;
+  }
+  
+  delete[] bytecode;
+  bytecode = newBytecode;
+  size = newBytecodeSize;
+  comments.clear();
+  
+  return true;
+}
+
+GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(versionMajor) {
 
   Common::SeekableReadStream* mainStream = nullptr;
 
@@ -115,14 +172,42 @@ GracGame::GracGame(const Common::Path& path) {
         }
       }
       warning("Trying %s", filePath.c_str());
-      mainStream = unpack(file.createReadStream());
+      if (versionMajor == -1) {
+        mainStream = unpack(file.createReadStream(), true);
+        if (mainStream) {
+          versionMajor = 2;
+        }
+        else {
+          mainStream = unpack(file.createReadStream(), true);
+          if (mainStream) {
+            versionMajor = 1;
+          }
+        }
+      }
+      else {
+        mainStream = unpack(file.createReadStream(), _versionMajor >= 2);
+      }
       if (mainStream) {
         break;
       }
     }
   }
   else if (fsnode.isReadable()) {
-    mainStream = unpack(fsnode.createReadStream());
+    if (versionMajor == -1) {
+      mainStream = unpack(fsnode.createReadStream(), true);
+      if (mainStream) {
+        versionMajor = 2;
+      }
+      else {
+        mainStream = unpack(fsnode.createReadStream(), true);
+        if (mainStream) {
+          versionMajor = 1;
+        }
+      }
+    }
+    else {
+      mainStream = unpack(fsnode.createReadStream(), _versionMajor >= 2);
+    }
   }
   else {
     error("Path not a folder or a readable file: %s", path.toString().c_str());
@@ -134,15 +219,15 @@ GracGame::GracGame(const Common::Path& path) {
 
   uint sharedResourceCount = 100;
   uint roomCount = sharedResourceCount;
-  uint closeupCount = sharedResourceCount;
+  uint closeupCount = (versionMajor >= 2) ? sharedResourceCount : 0;
   uint characterCount = sharedResourceCount;
   uint objectBankCount = sharedResourceCount;
   uint pictureCount = sharedResourceCount;
   uint sampleCount = sharedResourceCount;
-  uint animCount = sharedResourceCount;
+  uint animCount = (versionMajor >= 2) ? sharedResourceCount : 0;
   uint objectBankCharacterCount = 5;
   uint verbCount = 10;
-  uint scriptCommentCount = 101;
+  uint scriptCommentCount = (versionMajor >= 2) ? 101 : 0;
   uint stringCount = 1000;
   uint characterScriptCount = 51;
 
@@ -189,12 +274,18 @@ GracGame::GracGame(const Common::Path& path) {
     _rooms[i].pictureIndex = mainStream->readSByte();
     _rooms[i].objectBankIndex = mainStream->readSByte();
 
-    _closeups[i].devIndex = mainStream->readSByte();
-    _closeups[i].pictureIndex = mainStream->readSByte();
-    _closeups[i].objectBankIndex = mainStream->readSByte();
+    if (versionMajor >= 2) {
+      _closeups[i].devIndex = mainStream->readSByte();
+      _closeups[i].pictureIndex = mainStream->readSByte();
+      _closeups[i].objectBankIndex = mainStream->readSByte();
+    }
 
     _pictures[i].devIndex = mainStream->readSByte();
-    _anims[i].devIndex = mainStream->readSByte();
+
+    if (versionMajor >= 2) {
+      _anims[i].devIndex = mainStream->readSByte();
+    }
+
     _samples[i].devIndex = mainStream->readSByte();
   }
 
@@ -205,52 +296,100 @@ GracGame::GracGame(const Common::Path& path) {
     }
   }
 
-  if (!_characterScripts.read(mainStream, characterScriptCount, scriptCommentCount)) {
-    error("Unable to read character scripts");
-  }
-
-  _strings.resize(stringCount);
-  for (uint i = 0; i < stringCount; i++) {
-    if (!readTerminatedString(mainStream, _strings[i])) {
-      error("Unable to read strings");
+  if (versionMajor >= 2) {
+    if (!_characterScripts.readV2(mainStream, characterScriptCount, scriptCommentCount)) {
+      error("Unable to read character scripts");
     }
   }
-
-  _devicePaths.resize(sharedResourceCount);
-  for (uint i = 0; i < sharedResourceCount; i++) {
-    if (!readTerminatedString(mainStream, _devicePaths[i])) {
-      error("Unable to read device path");
-    }
-    if (!readTerminatedString(mainStream, _characters[i].name)) {
-      error("Unable to read character name string");
+  else {
+    if (!_characterScripts.readV1(mainStream, characterScriptCount)) {
+      error("Unable to read character scripts");
     }
   }
 
-  if (!readTerminatedString(mainStream, _controlFontName)) {
-    error("Unable to read font name");
-  }
-  if (!readTerminatedString(mainStream, _speechFontName)) {
-    error("Unable to read font name");
-  }
+  if (versionMajor >= 2) {
+    _strings.resize(stringCount);
+    for (uint i = 0; i < stringCount; i++) {
+      if (!readTerminatedString(mainStream, _strings[i])) {
+        error("Unable to read strings");
+      }
+    }
 
-  for (uint i = 0; i < sharedResourceCount; i++) {
-    if (!readTerminatedString(mainStream, _objectBanks[i].name)) {
-      error("Unable to read object bank name");
+    _devicePaths.resize(sharedResourceCount);
+    for (uint i = 0; i < sharedResourceCount; i++) {
+      if (!readTerminatedString(mainStream, _devicePaths[i])) {
+        error("Unable to read device path");
+      }
+      if (!readTerminatedString(mainStream, _characters[i].name)) {
+        error("Unable to read character name string");
+      }
     }
-    if (!readTerminatedString(mainStream, _rooms[i].name)) {
-      error("Unable to read room name");
+
+    if (!readTerminatedString(mainStream, _controlFontName)) {
+      error("Unable to read font name");
     }
-    if (!readTerminatedString(mainStream, _closeups[i].name)) {
-      error("Unable to read closeup name");
+    if (!readTerminatedString(mainStream, _speechFontName)) {
+      error("Unable to read font name");
     }
-    if (!readTerminatedString(mainStream, _pictures[i].name)) {
-      error("Unable to read picture name");
+
+    for (uint i = 0; i < sharedResourceCount; i++) {
+      if (!readTerminatedString(mainStream, _objectBanks[i].name)) {
+        error("Unable to read object bank name");
+      }
+      if (!readTerminatedString(mainStream, _rooms[i].name)) {
+        error("Unable to read room name");
+      }
+      if (!readTerminatedString(mainStream, _closeups[i].name)) {
+        error("Unable to read closeup name");
+      }
+      if (!readTerminatedString(mainStream, _pictures[i].name)) {
+        error("Unable to read picture name");
+      }
+      if (!readTerminatedString(mainStream, _anims[i].name)) {
+        error("Unable to read anim name");
+      }
+      if (!readTerminatedString(mainStream, _samples[i].name)) {
+        error("Unable to read sample name");
+      }
     }
-    if (!readTerminatedString(mainStream, _anims[i].name)) {
-      error("Unable to read anim name");
+  }
+  else {
+    if (!readTerminatedString(mainStream, _controlFontName)) {
+      error("Unable to read font name");
     }
-    if (!readTerminatedString(mainStream, _samples[i].name)) {
-      error("Unable to read sample name");
+    warning("control font: \"%s\"", _controlFontName.c_str());
+    if (!readTerminatedString(mainStream, _speechFontName)) {
+      error("Unable to read font name");
+    }
+    warning("speech font: \"%s\"", _speechFontName.c_str());
+
+    _devicePaths.resize(sharedResourceCount);
+    for (uint i = 0; i < sharedResourceCount; i++) {
+      if (!readTerminatedString(mainStream, _devicePaths[i])) {
+        error("Unable to read device path");
+      }
+      if (!readTerminatedString(mainStream, _characters[i].name)) {
+        error("Unable to read character name string");
+      }
+      if (!readTerminatedString(mainStream, _objectBanks[i].name)) {
+        error("Unable to read object bank name");
+      }
+      if (!readTerminatedString(mainStream, _rooms[i].name)) {
+        error("Unable to read room name");
+      }
+      if (!readTerminatedString(mainStream, _pictures[i].name)) {
+        error("Unable to read picture name");
+      }
+      if (!readTerminatedString(mainStream, _samples[i].name)) {
+        error("Unable to read sample name");
+      }
+    }
+
+    _strings.resize(stringCount);
+    for (uint i = 0; i < stringCount; i++) {
+      if (!readTerminatedString(mainStream, _strings[i])) {
+        error("Unable to read strings");
+      }
     }
   }
 
@@ -465,18 +604,19 @@ public:
   }
 };
 
-Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedStream) {
+Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedStream, bool isGrac2MainFile) {
+  const uint startPos = isGrac2MainFile ? 8 : 4;
   if (!packedStream) {
     warning("Unable to unpack: Input stream is null");
     return nullptr;
   }
-  if (packedStream->readUint32BE() != MKTAG('G', 'R', '2', '0')) {
+  if (isGrac2MainFile && packedStream->readUint32BE() != MKTAG('G', 'R', '2', '0')) {
     warning("Unable to unpack: GR20 tag not found");
     delete packedStream;
     return nullptr;
   }
   int64 streamLen = packedStream->size();
-  if (streamLen < 16 || streamLen % 4 != 0) {
+  if (streamLen < (startPos + 8) || streamLen % 4 != 0) {
     warning("Unable to unpack: Invalid length (%d)", streamLen);
     delete packedStream;
     return nullptr;
@@ -493,13 +633,13 @@ Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedS
     delete packedStream;
     return nullptr;
   }
-  if (!packedStream->seek(8, SEEK_SET)) {
+  if (!packedStream->seek(startPos, SEEK_SET)) {
     warning("Unable to unpack: Failed to seek");
     delete packedStream;
     return nullptr;
   }
   uint32 sum = 0;
-  for (int64 pos = 8; pos < streamLen-8; pos += 4) {
+  for (int64 pos = startPos; pos < streamLen-8; pos += 4) {
     sum ^= packedStream->readUint32BE();
   }
   if (sum != checksum) {
@@ -507,9 +647,9 @@ Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedS
     delete packedStream;
     return nullptr;
   }
-  uint32 packedLength = ((uint32)streamLen - 16) / 4;
+  uint32 packedLength = ((uint32)streamLen - (startPos + 8)) / 4;
   uint32* packed = new uint32[packedLength];
-  if (!packedStream->seek(8) || packedStream->read(packed, packedLength*4) != packedLength*4 || packedStream->err()) {
+  if (!packedStream->seek(startPos) || packedStream->read(packed, packedLength*4) != packedLength*4 || packedStream->err()) {
     warning("Unable to unpack: Failed to read payload");
     delete[] packed;
     delete packedStream;
