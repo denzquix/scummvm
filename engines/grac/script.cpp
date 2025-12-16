@@ -45,10 +45,11 @@ bool ScriptBank::readV2(Common::SeekableReadStream* fromStream, uint scriptCount
   const byte *inData = data;
   const byte *dataEnd = data + dataSize;
   for (uint script_i = 0; script_i < scriptCount; script_i++) {
-    if ((inData+4) > dataEnd) {
-      delete[] data;
-      warning("Missing script definition");
-      return false;
+    if ((inData+10) > dataEnd) {
+      // Lethal Formula room 1 has only 44 start markers
+      // for 50 scripts so we can't assume all will be
+      // present
+      break;
     }
     if (READ_BE_UINT16(inData) != 0xb620) {
       delete[] data;
