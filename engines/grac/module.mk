@@ -4,10 +4,12 @@ MODULE_OBJS = \
 	amos/memorybank.o \
 	grac.o \
 	console.o \
+	data.o \
 	events.o \
 	game.o \
 	messages.o \
 	metaengine.o \
+	script.o \
 	view.o \
 	view1.o
 

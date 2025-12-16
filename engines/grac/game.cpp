@@ -21,6 +21,7 @@
 
 #include "grac/grac.h"
 #include "grac/game.h"
+#include "grac/data.h"
 #include "common/config-manager.h"
 #include "common/fs.h"
 #include "common/path.h"
@@ -30,122 +31,6 @@
 namespace Grac {
 
 GracGame* g_game;
-
-bool readTerminatedString(Common::SeekableReadStream *stream, Common::String &outString) {
-  outString.clear();
-  for (;;) {
-    byte c = stream->readByte();
-    if (stream->err() || stream->eos()) {
-      outString.clear();
-      return false;
-    }
-    if (c == 0xD7) {
-      return true;
-    }
-    outString += (char)c;
-  }
-}
-
-bool GracGame::ScriptBank::readV2(Common::SeekableReadStream* fromStream, uint scriptCount, uint commentCount) {
-  scripts.resize(scriptCount);
-  if (!fromStream->skip(scriptCount * 2)) {
-    warning("Failed to skip initial opcode lookup table");
-    return false;
-  }
-  uint32 rawSize = fromStream->readUint32BE();
-  if (rawSize < 4 || rawSize >= 10*1024*1024) {
-    warning("Invalid script block size: %d", rawSize);
-    return false;
-  }
-  uint32 dataSize = rawSize - 4;
-  byte *data = new byte[dataSize];
-  if (fromStream->read(data, dataSize) != dataSize) {
-    delete[] data;
-    warning("Failed to read script block");
-    return false;
-  }
-  const byte *inData = data;
-  const byte *dataEnd = data + dataSize;
-  for (uint script_i = 0; script_i < scriptCount; script_i++) {
-    if ((inData+4) > dataEnd) {
-      delete[] data;
-      warning("Missing script definition");
-      return false;
-    }
-    if (READ_BE_UINT16(inData) != 0xb620) {
-      delete[] data;
-      warning("Missing script begin marker");
-      return false;
-    }
-    inData += 2;
-    if ((inData+2) > dataEnd) {
-      delete[] data;
-      warning("Unexpected end of bytecode");
-      return false;
-    }
-    for (; (inData + 8) < dataEnd; inData += 8) {
-      ScriptInstruction instr;
-      if ((instr.opcode = READ_BE_INT16(inData)) < 1) {
-        if ((uint16)instr.opcode == 0xb620) {
-          break;
-        }
-      }
-      else {
-        instr.param1 = READ_BE_UINT16(inData + 2);
-        instr.param2 = READ_BE_UINT16(inData + 4);
-        instr.param1Type = inData[6];
-        instr.param2Type = inData[7];
-        scripts[script_i].push_back(instr);
-      }
-    }
-  }
-  delete[] data;
-  comments.resize(commentCount);
-  for (uint i = 0; i < commentCount; i++) {
-    if (!readTerminatedString(fromStream, comments[i])) {
-      warning("Failed to read comments");
-      return false;
-    }
-  }
-  return true;
-}
-
-bool GracGame::ScriptBank::readV1(Common::SeekableReadStream* fromStream, uint scriptCount) {
-
-  if (!fromStream) {
-    return false;
-  }
-
-  const uint instructionsPerScript = 16;
-  
-  scripts.resize(scriptCount);
-
-  for (uint script_i = 0; script_i < scriptCount; script_i++) {
-    for (uint instr_i = 0; instr_i < instructionsPerScript; instr_i++) {
-      ScriptInstruction instr;
-      if ((instr.opcode = fromStream->readUint16BE()) < 1) {
-        if (!fromStream->skip(4 + 6 * (instructionsPerScript - instr_i - 1))) {
-          return false;
-        }
-        break;
-      }
-      instr.param1 = fromStream->readUint16BE();
-      instr.param2 = fromStream->readUint16BE();
-      instr.param1Type = 0;
-      instr.param2Type = 0;
-      scripts[script_i].push_back(instr);
-    }
-  }
-
-  if (fromStream->err() || fromStream->eos()) {
-    scripts.clear();
-    return false;
-  }
-  
-  comments.clear();
-  
-  return true;
-}
 
 GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(versionMajor) {
 
@@ -186,19 +71,19 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
       }
       warning("Trying %s", filePath.c_str());
       if (versionMajor == -1) {
-        mainStream = unpack(file.createReadStream(), true);
+        mainStream = decompress(file.createReadStream(), true);
         if (mainStream) {
           versionMajor = 2;
         }
         else {
-          mainStream = unpack(file.createReadStream(), true);
+          mainStream = decompress(file.createReadStream(), true);
           if (mainStream) {
             versionMajor = 1;
           }
         }
       }
       else {
-        mainStream = unpack(file.createReadStream(), _versionMajor >= 2);
+        mainStream = decompress(file.createReadStream(), _versionMajor >= 2);
       }
       if (mainStream) {
         break;
@@ -207,19 +92,19 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   }
   else if (fsnode.isReadable()) {
     if (versionMajor == -1) {
-      mainStream = unpack(fsnode.createReadStream(), true);
+      mainStream = decompress(fsnode.createReadStream(), true);
       if (mainStream) {
         versionMajor = 2;
       }
       else {
-        mainStream = unpack(fsnode.createReadStream(), true);
+        mainStream = decompress(fsnode.createReadStream(), true);
         if (mainStream) {
           versionMajor = 1;
         }
       }
     }
     else {
-      mainStream = unpack(fsnode.createReadStream(), _versionMajor >= 2);
+      mainStream = decompress(fsnode.createReadStream(), _versionMajor >= 2);
     }
   }
   else {
@@ -312,15 +197,8 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
     }
   }
 
-  if (versionMajor >= 2) {
-    if (!_characterScripts.readV2(mainStream, characterScriptCount, scriptCommentCount)) {
-      error("Unable to read character scripts");
-    }
-  }
-  else {
-    if (!_characterScripts.readV1(mainStream, characterScriptCount)) {
-      error("Unable to read character scripts");
-    }
+  if (!_characterScripts.read(mainStream, characterScriptCount, scriptCommentCount, versionMajor)) {
+    error("Unable to read character scripts");
   }
 
   if (versionMajor >= 2) {
@@ -426,7 +304,7 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   if (!controlsStream) {
     error("Unable to open GRAC.cont file");
   }
-  controlsStream = unpack(controlsStream, false);
+  controlsStream = decompress(controlsStream, false);
   if (!controlsStream) {
     error("Failed to unpack GRAC.cont file");
   }
@@ -464,15 +342,8 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
     _verbs[verb_i].type = controlsStream->readSint16BE();
     _verbs[verb_i].messageDisplayMode = controlsStream->readSint16BE();
   }
-  if (_versionMajor >= 2) {
-    if (!_verbScripts.readV2(controlsStream, verbScriptCount, scriptCommentCount)) {
-      error("Failed to load verb scripts");
-    }
-  }
-  else {
-    if (!_verbScripts.readV1(controlsStream, verbScriptCount)) {
-      error("Failed to load verb scripts");
-    }
+  if (!_verbScripts.read(controlsStream, verbScriptCount, scriptCommentCount, versionMajor)) {
+    error("Failed to load verb scripts");
   }
   for (uint verb_i = 0; verb_i < verbCount; verb_i++) {
     if (!readTerminatedString(controlsStream, _verbs[verb_i].text)) {
@@ -499,7 +370,7 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   if (!invStream) {
     error("Unable to open GRAC.inv file");
   }
-  invStream = unpack(invStream, false);
+  invStream = decompress(invStream, false);
   if (!invStream) {
     error("Failed to unpack GRAC.inv file");
   }
@@ -512,15 +383,8 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
     }
   }
 
-  if (_versionMajor >= 2) {
-    if (!_inventoryScripts.readV2(invStream, inventoryScriptCount, scriptCommentCount)) {
-      error("Failed to load verb scripts");
-    }
-  }
-  else {
-    if (!_inventoryScripts.readV1(invStream, inventoryScriptCount)) {
-      error("Failed to load verb scripts");
-    }
+  if (!_inventoryScripts.read(invStream, inventoryScriptCount, scriptCommentCount, versionMajor)) {
+    error("Failed to load verb scripts");
   }
   for (uint inv_i = 0; inv_i < inventoryItemCount; inv_i++) {
     if (!readTerminatedString(invStream, _inventoryItems[inv_i].name)) {
@@ -547,269 +411,6 @@ GracGame::GracGame(const Common::Path& path, int versionMajor): _versionMajor(ve
   }
 
   g_game = this;
-}
-
-class Grac2Decompressor {
-public:
-  Grac2Decompressor(const uint32* packedStart, const uint32* packedEnd, byte* unpackedStart, byte* unpackedEnd) :
-    _packedEnd(packedEnd),
-    _packedStart(packedStart),
-    _packedHead(packedEnd),
-    _unpackedEnd(unpackedEnd),
-    _unpackedStart(unpackedStart),
-    _unpackedHead(unpackedEnd) {
-  }
-private:
-  const uint32* _packedEnd;
-  const uint32* _packedStart;
-  const uint32* _packedHead;
-  byte* _unpackedEnd;
-  byte* _unpackedStart;
-  byte* _unpackedHead;
-  uint32 _bitCount = 0;
-  uint32 _bitBuf = 0;
-  bool canReadBits(uint n) {
-    return (_bitCount + 8 * 4 * (_packedHead - _packedStart)) >= n;
-  }
-  bool fillBitBuf() {
-    if (_packedHead <= _packedStart) {
-      return false;
-    }
-    _bitBuf = *--_packedHead;
-    _bitCount = 32;
-    return true;
-  }
-  int readBit() {
-    if (_bitCount == 0 && !fillBitBuf()) {
-      return -1;
-    }
-    uint b = _bitBuf & 1;
-    _bitBuf >>= 1;
-    _bitCount--;
-    return b;
-  }
-  int readBits(int n) {
-    int v = 0;
-    for (int i = 0; i < n; i++) {
-      v = (v << 1) | readBit();
-    }
-    return v;
-  }
-  bool writeByte(byte b) {
-    if (_unpackedHead <= _unpackedStart) {
-      return false;
-    }
-    *--_unpackedHead = b;
-    return true;
-  }
-  bool copy(uint distance, uint count) {
-    if ((_unpackedHead - count) < _unpackedStart) {
-      return false;
-    }
-    byte* copyHead = _unpackedHead + distance;
-    if (copyHead > _unpackedEnd) {
-      return false;
-    }
-    while (count != 0) {
-      *--_unpackedHead = *--copyHead;
-      count--;
-    }
-    return true;
-  }
-public:
-  bool readAll() {
-    // initiate bit buffer using anchor bit for alignment
-    if (!fillBitBuf()) {
-      return false;
-    }
-    if (_bitBuf == 0) {
-      // no anchor bit!
-      return false;
-    }
-    for (_bitCount = 31; _bitCount >= 0; _bitCount--) {
-      if (_bitBuf & (1U << _bitCount)) {
-        // anchor bit found
-        break;
-      }
-    }
-    // mask off anchor bit (not strictly necessary)
-    _bitBuf &= (1U << _bitCount)-1;
-    while (_unpackedHead > _unpackedStart) {
-      if (!canReadBits(2)) {
-        return false;
-      }
-      uint distance, count;
-      switch (readBit()) {
-        case 0: {
-          switch (readBit()) {
-            case 0: {
-              if (!canReadBits(3)) {
-                return false;
-              }
-              count = readBits(3) + 1;
-              if (!canReadBits(8 * count)) {
-                return false;
-              }
-              while (count > 0) {
-                if (!writeByte(readBits(8))) {
-                  return false;
-                }
-                count--;
-              }
-              break;
-            }
-            case 1: {
-              if (!canReadBits(8)) {
-                return false;
-              }
-              distance = readBits(8);
-              if (!copy(distance, 2)) {
-                return false;
-              }
-              break;
-            }
-          }
-          break;
-        }
-        case 1: {
-          if (!canReadBits(2)) {
-            return false;
-          }
-          switch (readBit()) {
-            case 0: {
-              switch (readBit()) {
-                case 0: {
-                  if (!canReadBits(9)) {
-                    return false;
-                  }
-                  distance = readBits(9);
-                  if (!copy(distance, 3)) {
-                    return false;
-                  }
-                  break;
-                }
-                case 1: {
-                  if (!canReadBits(10)) {
-                    return false;
-                  }
-                  distance = readBits(10);
-                  if (!copy(distance, 4)) {
-                    return false;
-                  }
-                  break;
-                }
-              }
-              break;
-            }
-            case 1: {
-              switch (readBit()) {
-                case 0: {
-                  if (!canReadBits(20)) {
-                    return false;
-                  }
-                  count = readBits(8) + 1;
-                  distance = readBits(12);
-                  if (!copy(distance, count)) {
-                    return false;
-                  }
-                  break;
-                }
-                case 1: {
-                  if (!canReadBits(8)) {
-                    return false;
-                  }
-                  count = readBits(8) + 9;
-                  if (!canReadBits(count * 8)) {
-                    return false;
-                  }
-                  while (count > 0) {
-                    if (!writeByte(readBits(8))) {
-                      return false;
-                    }
-                    count--;
-                  }
-                  break;
-                }
-              }
-              break;
-            }
-          }
-          break;
-        }
-      }
-    }
-    if (canReadBits(1)) {
-      return false;
-    }
-    return true;
-  }
-};
-
-Common::SeekableReadStream* GracGame::unpack(Common::SeekableReadStream *packedStream, bool isGrac2MainFile) {
-  const uint startPos = isGrac2MainFile ? 8 : 4;
-  if (!packedStream) {
-    warning("Unable to unpack: Input stream is null");
-    return nullptr;
-  }
-  if (isGrac2MainFile && packedStream->readUint32BE() != MKTAG('G', 'R', '2', '0')) {
-    warning("Unable to unpack: GR20 tag not found");
-    delete packedStream;
-    return nullptr;
-  }
-  int64 streamLen = packedStream->size();
-  if (streamLen < (startPos + 8) || streamLen % 4 != 0) {
-    warning("Unable to unpack: Invalid length (%d)", streamLen);
-    delete packedStream;
-    return nullptr;
-  }
-  if (!packedStream->seek(-8, SEEK_END)) {
-    warning("Unable to unpack: Failed to seek");
-    delete packedStream;
-    return nullptr;
-  }
-  uint32 checksum = packedStream->readUint32BE();
-  uint32 unpackedLength = packedStream->readUint32BE();
-  if (unpackedLength > 16*1024*1024) {
-    warning("Unable to unpack: Unpacked length too big (%d)", unpackedLength);
-    delete packedStream;
-    return nullptr;
-  }
-  if (!packedStream->seek(startPos, SEEK_SET)) {
-    warning("Unable to unpack: Failed to seek");
-    delete packedStream;
-    return nullptr;
-  }
-  uint32 sum = 0;
-  for (int64 pos = startPos; pos < streamLen-8; pos += 4) {
-    sum ^= packedStream->readUint32BE();
-  }
-  if (sum != checksum) {
-    warning("Unable to unpack: Failed checksum (expected %x, got %x)", checksum, sum);
-    delete packedStream;
-    return nullptr;
-  }
-  uint32 packedLength = ((uint32)streamLen - (startPos + 8)) / 4;
-  uint32* packed = new uint32[packedLength];
-  if (!packedStream->seek(startPos) || packedStream->read(packed, packedLength*4) != packedLength*4 || packedStream->err()) {
-    warning("Unable to unpack: Failed to read payload");
-    delete[] packed;
-    delete packedStream;
-    return nullptr;
-  }
-  delete packedStream;
-  for (uint32 packed_i = 0; packed_i < packedLength; packed_i++) {
-    packed[packed_i] = FROM_BE_32(packed[packed_i]);
-  }
-  byte* unpacked = new byte[unpackedLength];
-  Grac2Decompressor decomp(packed, packed + packedLength, unpacked, unpacked + unpackedLength);
-  if (!decomp.readAll()) {
-    warning("Unable to unpack: Decompression stream error");
-    delete[] packed;
-    delete[] unpacked;
-    return nullptr;
-  }
-  delete[] packed;
-  return new Common::MemoryReadStream(unpacked, unpackedLength, DisposeAfterUse::YES);
 }
 
 GracGame::~GracGame() {
@@ -864,155 +465,6 @@ const Graphics::AmigaFont* GracGame::loadFont(const Common::String& name, int si
     }
   }
   return new Graphics::AmigaFont(); // fall back to default
-}
-
-static Common::String encodeParam(int16 paramValue, uint8 modifier) {
-  switch (modifier) {
-    case 0: return Common::String::format("%d", paramValue);
-    case 1: return Common::String::format("#%d", paramValue);
-    case 2: return "room";
-    case 3: return "item";
-    case 4: return "pc";
-    case 5: return "entrance";
-    case 6: return "gtime";
-    case 7: return "rtime";
-    case 8: return "current";
-    case 9: return "string";
-    case 10: return "height";
-    default: return Common::String::format("%d [unknown modifier: %d]", paramValue, modifier);
-  }
-}
-
-static Common::String encodeComparator(int16 paramValue) {
-  switch (paramValue) {
-    case 1: return ">";
-    case 2: return ">=";
-    case 3: return "=";
-    case 4: return "<=";
-    case 5: return "<";
-    default: return Common::String::format("[unknown comparator %d]", paramValue);
-  }
-}
-
-Common::String GracGame::ScriptInstruction::toString() const {
-  switch(opcode) {
-    case 1: return "bell";
-    case 2: return "execute";
-    case 19: return "end if";
-    case 27: return "else";
-    case 31: return "end select";
-    case 45: return "no default";
-    case 46: return "freeze";
-    case 47: return "unfreeze";
-    case 51: return "fade in";
-    case 55: return "timer off";
-    case 65: return "hide";
-    case 66: return "show";
-    case 71: return "music stop";
-    case 72: return "restart";
-    case 75: return "picture off";
-    case 77: return "quit";
-    case 79: return "limbo";
-    case 83: return "scroll off";
-    case 84: return "scroll on";
-    case 89: return "exit close up";
-    case 93: return "cycle off";
-    case 94: return "save off";
-    case 96: return "save on";
-    case 98: return "walk off";
-    case 99: return "walk on";
-    case 101: return "*comment";
-    case 104: return "pause off";
-    case 108: return "end";
-
-    case 3: return "go " + encodeParam(param1, param1Type);
-    case 4: return "wait stop " + encodeParam(param1, param1Type);
-    case 5: return "print " + encodeParam(param1, param1Type);
-    case 9: return "stop " + encodeParam(param1, param1Type);
-    case 14: return "wait " + encodeParam(param1, param1Type);
-    case 29: return "script " + encodeParam(param1, param1Type);
-    case 41: return "next " + encodeParam(param1, param1Type);
-    case 42: return "clear string " + encodeParam(param1, param1Type);
-    case 48: return "load palette " + encodeParam(param1, param1Type);
-    case 49: return "fade " + encodeParam(param1, param1Type);
-    case 61: return "load sample " + encodeParam(param1, param1Type);
-    case 64: return "erase sample " + encodeParam(param1, param1Type);
-    case 67: return "hide character " + encodeParam(param1, param1Type);
-    case 74: return "show picture " + encodeParam(param1, param1Type);
-    case 76: return "wait click " + encodeParam(param1, param1Type); // timeout
-    case 81: return "fade picture " + encodeParam(param1, param1Type);
-    case 82: return "toggle flag " + encodeParam(param1, param1Type);
-    case 86: return "switch " + encodeParam(param1, param1Type);
-    case 87: return "dcontrol palette " + encodeParam(param1, param1Type);
-    case 88: return "fade control " + encodeParam(param1, param1Type);
-    case 90: return "close up " + encodeParam(param1, param1Type);
-    case 95: return "verb off " + encodeParam(param1, param1Type);
-    case 97: return "verb on " + encodeParam(param1, param1Type);
-    case 102: return "pause " + encodeParam(param1, param1Type); // frames
-    case 106: return "set mark " + encodeParam(param1, param1Type);
-    case 107: return "goto mark " + encodeParam(param1, param1Type);
-    case 110: return "static " + encodeParam(param1, param1Type);
-    case 111: return "scale " + encodeParam(param1, param1Type); // percent
-
-    case 6: return "reach " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 7: return "take " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 8: return "paste " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 10: return "say " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 11: return "load room " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 12: return "character frame " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 13: return "object frame " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 15: return "face " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 16: return "compare flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 17: return "compare value " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 18: return "if " + encodeComparator(param1) + ", " + encodeParam(param2, param2Type);
-    case 20: return "compare item " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 21: return "add item" + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 22: return "drop item " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 23: return "set flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 24: return "link " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 25: return "choice " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 26: return "choose " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 28: return "else if " + encodeComparator(param1) + ", " + encodeParam(param2, param2Type);
-    case 30: return "select " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 32: return "random " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 33: return "add " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 34: return "add flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 35: return "subtract flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 36: return "set string " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 37: return "add string " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 38: return "number to string " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 39: return "flag to string " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 40: return "for " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 43: return "copy flag " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 44: return "amal " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 50: return "timer " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 52: return "compare entry " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 53: return "place character " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 54: return "walk " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 56: return "sound left " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 57: return "sound right " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 58: return "sound centre " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 59: return "sound back " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 60: return "st play " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 62: return "body frame " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 63: return "med play " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 68: return "goto " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 69: return "voice " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 70: return "set voice " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 73: return "character change " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 78: return "play anim " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 80: return "flash " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 85: return "scroll " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 91: return "clear flags " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 92: return "cycle " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 100: return "compare " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 103: return "anim " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 105: return "subtract " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 109: return "perspective " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    case 112: return "position voice " + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-    
-    default: return Common::String::format("opcode_%04X", (uint16)opcode) + encodeParam(param1, param1Type) + ", " + encodeParam(param2, param2Type);
-  }
 }
 
 }

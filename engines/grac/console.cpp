@@ -21,6 +21,7 @@
 
 #include "grac/console.h"
 #include "grac/grac.h"
+#include "grac/script.h"
 
 namespace Grac {
 
@@ -32,7 +33,7 @@ Console::~Console() {
 }
 
 bool Console::Cmd_viewscript(int argc, const char **argv) {
-	const GracGame::ScriptBank* scriptBank = nullptr;
+	const ScriptBank* scriptBank = nullptr;
 	uint64 num = 0;
 	if (argc == 3) {
 		Common::String arg1(argv[1]);

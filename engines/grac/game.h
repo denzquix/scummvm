@@ -28,6 +28,7 @@
 #include "common/stream.h"
 #include "graphics/fonts/amigafont.h"
 #include "grac/grac.h"
+#include "grac/script.h"
 
 namespace Grac {
 
@@ -81,15 +82,6 @@ public:
     Common::String name;
   };
 
-  struct ScriptInstruction {
-    int16 opcode;
-    int16 param1;
-    int16 param2;
-    uint8 param1Type; // 0 in GRAC 1
-    uint8 param2Type; // 0 in GRAC 1
-    Common::String toString() const;
-  };
-
   enum VerbType {
     kVerbAny = 1,
     kVerbInv = 2,
@@ -124,16 +116,7 @@ public:
     Common::Array<int> scripts;
   };
 
-  struct ScriptBank {
-    bool readV1(Common::SeekableReadStream* fromStream, uint scriptCount);
-    bool readV2(Common::SeekableReadStream* fromStream, uint scriptCount, uint commentCount);
-
-    Common::Array<Common::Array<ScriptInstruction>> scripts;
-    Common::Array<Common::String> comments;
-  };
-
 private:
-  Common::SeekableReadStream* unpack(Common::SeekableReadStream *packedStream, bool isGrac2MainFile);  
   int _versionMajor;
   uint32 _controlsDataLength;
   uint32 _inventoryDataLength;
