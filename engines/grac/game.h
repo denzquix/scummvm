@@ -195,6 +195,7 @@ public:
   const int getControlPicture() const { return _controlsPictureIndex; }
   const Common::Point getControlPos() const { return _controlsPos; }
   const Common::Rect getRoomViewRect() const { return _roomViewRect; }
+  int getVersionMajor() const { return _versionMajor; }
 
 };
 
