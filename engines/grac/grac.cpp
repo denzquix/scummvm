@@ -34,6 +34,8 @@
 #include "common/system.h"
 #include "engines/util.h"
 #include "graphics/paletteman.h"
+#include "graphics/cursorman.h"
+#include "graphics/scaler.h"
 
 namespace Grac {
 
@@ -80,10 +82,49 @@ Common::Error GracEngine::run() {
 		}
 	}
 	_game = new GracGame(gamePath, versionMajor);
+	if (loadObjectSprites(_game->getControlsObjectBankIndex(), _controlSprites, _controlSpritesPalette)) {
+		g_system->getPaletteManager()->setPalette(_controlSpritesPalette, 192);
+		setNormalCursor();
+		CursorMan.showMouse(true);
+	}
+	else {
+		warning("Failed to load control sprites (GRAC %d.object)", _game->getControlsObjectBankIndex());
+	}
 
 	runGame();
 
 	return Common::kNoError;
+}
+
+void GracEngine::setCursor(int i) {
+	if (i >= 0 && (uint)i < _controlSprites.size()) {
+		Graphics::Surface tmp;
+		tmp.create(_controlSprites[i].surf.w * 2, _controlSprites[i].surf.h * 2, _controlSprites[i].surf.format);
+		byte* pixels = (byte*)tmp.getPixels();
+		Graphics::scaleBlit(
+			pixels,
+			(byte*)_controlSprites[i].surf.getPixels(),
+			tmp.pitch,
+			_controlSprites[i].surf.pitch,
+			tmp.w,
+			tmp.h,
+			_controlSprites[i].surf.w,
+			_controlSprites[i].surf.h,
+			tmp.format);
+		byte* endPixels = pixels + tmp.pitch * tmp.h;
+		for (byte* p = pixels; p < endPixels; p++) {
+			*p += 192;
+		}
+		CursorMan.replaceCursor(tmp, _controlSprites[i].hotspotX*2, _controlSprites[i].hotspotY*2, 192);
+	}
+}
+
+void GracEngine::setNormalCursor() {
+	setCursor(_controlSprites.size() - 100 + 0);
+}
+
+void GracEngine::setBusyCursor() {
+	setCursor(_controlSprites.size() - 100 + 1);
 }
 
 Common::Error GracEngine::syncGame(Common::Serializer &s) {

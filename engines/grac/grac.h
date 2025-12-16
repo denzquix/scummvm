@@ -51,6 +51,8 @@ private:
 	Common::RandomSource _randomSource;
 	GracGame *_game;
 	bool loadSprites(const char* extension, int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
+	Common::Array<Amos::Sprite> _controlSprites;
+	Graphics::Palette _controlSpritesPalette;
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -118,6 +120,9 @@ public:
 	bool loadCloseup(int number, Closeup& outCloseup);
 	bool loadObjectSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
 	bool loadCharacterSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
+	void setNormalCursor();
+	void setBusyCursor();
+	void setCursor(int controlSpriteIndex);
 };
 
 extern GracEngine *g_engine;
