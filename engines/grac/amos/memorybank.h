@@ -93,14 +93,7 @@ public:
 struct Sprite {
   Graphics::Surface surf;
   int16 hotspotX, hotspotY;
-};
-
-class SpriteBank {
-
-public:
-
-  bool load(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette);
-
+  static bool loadBank(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette);
 };
 
 }

@@ -302,7 +302,7 @@ bool MemoryBank::toPicture(Graphics::Surface& surf, Graphics::Palette& pal) {
   return true;
 }
 
-bool SpriteBank::load(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette) {
+bool Sprite::loadBank(Common::SeekableReadStream *fromStream, Common::Array<Sprite>& outSprites, Graphics::Palette& outPalette) {
   if (!fromStream) {
     return false;
   }
