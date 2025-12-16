@@ -37,6 +37,7 @@
 #include "grac/detection.h"
 #include "grac/events.h"
 #include "grac/game.h"
+#include "grac/room.h"
 
 namespace Grac {
 
@@ -110,6 +111,7 @@ public:
 	void renderSpeech(const Common::String& text, Graphics::Surface& surface, int color);
 
 	bool loadPicture(int number, Graphics::Surface& outSurf, Graphics::Palette& outPalette, uint8 paletteOffset = 0);
+	bool loadRoom(int number, Room& outRoom);
 };
 
 extern GracEngine *g_engine;

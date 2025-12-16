@@ -7,6 +7,7 @@ MODULE_OBJS = \
 	data.o \
 	events.o \
 	game.o \
+	room.o \
 	messages.o \
 	metaengine.o \
 	script.o \

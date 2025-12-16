@@ -21,9 +21,11 @@
 
 #include "grac/grac.h"
 #include "grac/detection.h"
+#include "grac/data.h"
 #include "grac/console.h"
 #include "grac/amos/memorybank.h"
 #include "grac/game.h"
+#include "grac/room.h"
 #include "common/scummsys.h"
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
@@ -142,6 +144,23 @@ bool GracEngine::loadPicture(int pictureNumber, Graphics::Surface& outSurf, Grap
 		}
 	}
 	return false;
+}
+
+bool GracEngine::loadRoom(int roomNumber, Room& outRoom) {
+	Common::FSNode fsNode;
+	if (!g_game->findFile(Common::String::format("GRAC %d.room", roomNumber), fsNode)) {
+		return false;
+	}
+	Common::SeekableReadStream* stream = decompress(fsNode.createReadStream(), false);
+	if (!stream) {
+		return false;
+	}
+	if (!outRoom.read(stream, g_game->getVersionMajor())) {
+		delete stream;
+		return false;
+	}
+	delete stream;
+	return true;
 }
 
 } // End of namespace Grac
