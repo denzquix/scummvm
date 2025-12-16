@@ -39,6 +39,7 @@
 #include "grac/events.h"
 #include "grac/game.h"
 #include "grac/room.h"
+#include "grac/amos/memorybank.h"
 
 namespace Grac {
 
@@ -49,6 +50,7 @@ private:
 	const ADGameDescription *_gameDescription;
 	Common::RandomSource _randomSource;
 	GracGame *_game;
+	bool loadSprites(const char* extension, int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
 protected:
 	// Engine APIs
 	Common::Error run() override;
@@ -114,6 +116,8 @@ public:
 	bool loadPicture(int number, Graphics::Surface& outSurf, Graphics::Palette& outPalette, uint8 paletteOffset = 0);
 	bool loadRoom(int number, Room& outRoom);
 	bool loadCloseup(int number, Closeup& outCloseup);
+	bool loadObjectSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
+	bool loadCharacterSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette);
 };
 
 extern GracEngine *g_engine;

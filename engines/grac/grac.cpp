@@ -181,4 +181,29 @@ bool GracEngine::loadCloseup(int closeupNumber, Closeup& outCloseup) {
 	return true;
 }
 
+bool GracEngine::loadSprites(const char* extension, int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette) {
+	Common::FSNode fsNode;
+	if (!g_game->findFile(Common::String::format("GRAC %d.%s", number, extension), fsNode)) {
+		return false;
+	}
+	Common::SeekableReadStream* stream = fsNode.createReadStream();
+	if (!stream) {
+		return false;
+	}
+	if (!Amos::Sprite::loadBank(stream, outSprites, outPalette)) {
+		delete stream;
+		return false;
+	}
+	delete stream;
+	return true;
+}
+
+bool GracEngine::loadCharacterSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette) {
+	return loadSprites("character", number, outSprites, outPalette);
+}
+
+bool GracEngine::loadObjectSprites(int number, Common::Array<Amos::Sprite>& outSprites, Graphics::Palette& outPalette) {
+	return loadSprites("object", number, outSprites, outPalette);
+}
+
 } // End of namespace Grac
