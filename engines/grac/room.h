@@ -100,7 +100,7 @@ public:
   bool read(Common::SeekableReadStream* fromStream, int versionMajor);
   const ScriptBank* getScripts() const { return &_scriptBank; }
   const Common::Array<ForegroundObject>& getForegroundObjects() const { return _foregroundObjects; }
-  const Common::Array<BackgroundObject>& geBackgroundObjects() const { return _backgroundObjects; }
+  const Common::Array<BackgroundObject>& getBackgroundObjects() const { return _backgroundObjects; }
 
 };
 
