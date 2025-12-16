@@ -4,6 +4,7 @@ MODULE_OBJS = \
 	amos/memorybank.o \
 	grac.o \
 	console.o \
+	closeup.o \
 	data.o \
 	events.o \
 	game.o \

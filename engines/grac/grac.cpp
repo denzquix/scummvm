@@ -20,6 +20,7 @@
  */
 
 #include "grac/grac.h"
+#include "grac/closeup.h"
 #include "grac/detection.h"
 #include "grac/data.h"
 #include "grac/console.h"
@@ -156,6 +157,23 @@ bool GracEngine::loadRoom(int roomNumber, Room& outRoom) {
 		return false;
 	}
 	if (!outRoom.read(stream, g_game->getVersionMajor())) {
+		delete stream;
+		return false;
+	}
+	delete stream;
+	return true;
+}
+
+bool GracEngine::loadCloseup(int closeupNumber, Closeup& outCloseup) {
+	Common::FSNode fsNode;
+	if (!g_game->findFile(Common::String::format("GRAC %d.closeup", closeupNumber), fsNode)) {
+		return false;
+	}
+	Common::SeekableReadStream* stream = decompress(fsNode.createReadStream(), false);
+	if (!stream) {
+		return false;
+	}
+	if (!outCloseup.read(stream)) {
 		delete stream;
 		return false;
 	}

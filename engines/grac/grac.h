@@ -34,6 +34,7 @@
 #include "engines/savestate.h"
 #include "graphics/screen.h"
 
+#include "grac/closeup.h"
 #include "grac/detection.h"
 #include "grac/events.h"
 #include "grac/game.h"
@@ -112,6 +113,7 @@ public:
 
 	bool loadPicture(int number, Graphics::Surface& outSurf, Graphics::Palette& outPalette, uint8 paletteOffset = 0);
 	bool loadRoom(int number, Room& outRoom);
+	bool loadCloseup(int number, Closeup& outCloseup);
 };
 
 extern GracEngine *g_engine;
