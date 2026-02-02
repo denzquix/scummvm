@@ -22,17 +22,21 @@
 namespace Amos {
 
 const PlainGameDescriptor amosGames[] = {
-	{ "amos", "Amos" },
+	{ "starbase13", "Starbase 13" },
 	{ 0, 0 }
 };
 
 const ADGameDescription gameDescriptions[] = {
 	{
-		"amos",
+		"starbase13",
 		nullptr,
-		AD_ENTRY1s("file1.bin", "00000000000000000000000000000000", 11111),
+		{
+			{"starbase_13", 0, "ced973d9e77f58c6ee3859d258a41231", 286104},			
+			{"main", 0, "638473a2cc33b880847780e860261082", 259640},
+			AD_LISTEND,
+		},
 		Common::EN_ANY,
-		Common::kPlatformDOS,
+		Common::kPlatformAmiga,
 		ADGF_UNSTABLE,
 		GUIO1(GUIO_NONE)
 	},
