@@ -3,7 +3,8 @@ MODULE := engines/amos
 MODULE_OBJS = \
 	amos.o \
 	console.o \
-	metaengine.o
+	metaengine.o \
+	rasterizer.o
 
 # This module can be built as a plugin
 ifeq ($(ENABLE_AMOS), DYNAMIC_PLUGIN)

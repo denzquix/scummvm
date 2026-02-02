@@ -43,6 +43,10 @@ AmosEngine::AmosEngine(OSystem *syst, const ADGameDescription *gameDesc) : Engin
 
 AmosEngine::~AmosEngine() {
 	delete _screen;
+	if (_rasterizer) {
+		delete _rasterizer;
+		_rasterizer = nullptr;
+	}
 }
 
 uint32 AmosEngine::getFeatures() const {
@@ -54,7 +58,8 @@ Common::String AmosEngine::getGameId() const {
 }
 
 Common::Error AmosEngine::run() {
-	initGraphics(640, 512, nullptr);
+	_rasterizer = new Rasterizer();
+	_rasterizer->initRenderMode(RasterizerMode::createDefaultPalHires());
 	_screen = new Graphics::Screen();
 
 	// Set the engine's debugger console
@@ -72,7 +77,7 @@ Common::Error AmosEngine::run() {
 
 	Common::Event e;
 
-	Graphics::FrameLimiter limiter(g_system, 60);
+	Graphics::FrameLimiter limiter(g_system, _rasterizer->mode().framesPerSecond);
 	while (!shouldQuit()) {
 		while (g_system->getEventManager()->pollEvent(e)) {
 		}

@@ -35,6 +35,7 @@
 #include "graphics/screen.h"
 
 #include "amos/detection.h"
+#include "amos/rasterizer.h"
 
 namespace Amos {
 
@@ -49,6 +50,7 @@ protected:
 	Common::Error run() override;
 public:
 	Graphics::Screen *_screen = nullptr;
+	Rasterizer *_rasterizer = nullptr;
 public:
 	AmosEngine(OSystem *syst, const ADGameDescription *gameDesc);
 	~AmosEngine() override;
