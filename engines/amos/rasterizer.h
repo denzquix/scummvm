@@ -54,23 +54,19 @@ public:
 	void setPalette(const byte *palette, uint16 start, uint16 count);
 	void queueSpan(const Common::Rect &rect);
 	void flushQueuedSpans();
+	void endFrame();
 
 	const RasterizerMode &mode() const;
 
 private:
-	struct BeamSpan {
-		Common::Rect rect;
-		Common::Array<byte> palette;
-	};
-
 	void ensureBuffers();
-	void blitSpan(const BeamSpan &span);
+	void blitSpan(const Common::Rect &span);
 
 	RasterizerMode _mode;
 	Graphics::Surface _clutSurface;
 	Graphics::Surface _outputSurface;
 	Common::Array<byte> _currentPalette;
-	Common::Array<BeamSpan> _queuedSpans;
+	Common::Array<Common::Rect> _queuedSpans;
 };
 
 } // End of namespace Amos

@@ -80,32 +80,32 @@ void Rasterizer::setPalette(const byte *palette, uint16 start, uint16 count) {
 	assert(palette);
 	assert(start + count <= Graphics::PALETTE_COUNT);
 
+	flushQueuedSpans();
+
 	byte *dest = _currentPalette.data() + start * 3;
 	Common::copy(palette, palette + count * 3, dest);
 }
 
 void Rasterizer::queueSpan(const Common::Rect &rect) {
   if (!_queuedSpans.empty()) {
-    BeamSpan &lastSpan = _queuedSpans.back();
-    if (lastSpan.rect.bottom == rect.top &&
-        lastSpan.rect.left == rect.left &&
-        lastSpan.rect.right == rect.right) {
-      lastSpan.rect.bottom = rect.bottom;
-    }
+		Common::Rect &lastSpan = _queuedSpans.back();
+		if (lastSpan.bottom == rect.top &&
+				lastSpan.left == rect.left &&
+				lastSpan.right == rect.right) {
+			lastSpan.bottom = rect.bottom;
+		}
     return;
   }
-  BeamSpan span;
-  span.rect = rect;
-  span.palette = _currentPalette;
-  _queuedSpans.push_back(span);
+  _queuedSpans.push_back(rect);
 }
 
 void Rasterizer::flushQueuedSpans() {
+	if (_queuedSpans.empty())
+		return;
 	for (const auto &span : _queuedSpans)
 		blitSpan(span);
 
 	_queuedSpans.clear();
-	g_system->updateScreen();
 }
 
 void Rasterizer::ensureBuffers() {
@@ -121,8 +121,8 @@ void Rasterizer::ensureBuffers() {
 	}
 }
 
-void Rasterizer::blitSpan(const BeamSpan &span) {
-	Common::Rect clip = span.rect;
+void Rasterizer::blitSpan(const Common::Rect &span) {
+	Common::Rect clip = span;
 	clip.clip(_mode.visibleRect());
 	if (clip.isEmpty())
 		return;
@@ -138,12 +138,17 @@ void Rasterizer::blitSpan(const BeamSpan &span) {
 
 		for (int x = 0; x < clip.width(); ++x) {
 			const byte index = src[x];
-			const byte *palEntry = &span.palette[index * 3];
+			const byte *palEntry = &_currentPalette[index * 3];
 			_outputSurface.setPixel(outX + x, dstY, format.RGBToColor(palEntry[0], palEntry[1], palEntry[2]));
 		}
 	}
 
 	g_system->copyRectToScreen(_outputSurface.getBasePtr(outX, outY), _outputSurface.pitch, outX, outY, clip.width(), clip.height());
+}
+
+void Rasterizer::endFrame() {
+	flushQueuedSpans();
+	g_system->updateScreen();
 }
 
 } // End of namespace Amos
