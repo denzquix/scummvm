@@ -30,6 +30,7 @@
 #include "common/system.h"
 #include "engines/util.h"
 #include "graphics/paletteman.h"
+#include "graphics/pixelformat.h"
 
 namespace Amos {
 
@@ -53,8 +54,7 @@ Common::String AmosEngine::getGameId() const {
 }
 
 Common::Error AmosEngine::run() {
-	// Initialize 320x200 paletted graphics mode
-	initGraphics(320, 200);
+	initGraphics(640, 512, nullptr);
 	_screen = new Graphics::Screen();
 
 	// Set the engine's debugger console
